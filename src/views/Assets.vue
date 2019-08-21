@@ -1,7 +1,6 @@
 <template>
   <v-container>
-    <h1>Assets</h1>
-    <pre>{{ test }}</pre>
+    <v-data-table :headers="headers" :items="items"/>
   </v-container>
 </template>
 
@@ -9,11 +8,18 @@
   export default {
     name: 'Assets',
     data: () => ({
-      test: null
+      items: [],
+      headers: [
+        { text: 'Title', value: 'title' },
+        { text: 'Labels', value: 'labels' },
+        { text: 'State', value: 'state' },
+      ]
     }),
 
     async mounted() {
-      this.test = (await this.$axios.get('/assets')).data;
+      const { data } = await this.$axios.get('/assets');
+
+      this.items = data.items;
     }
   }
 </script>
