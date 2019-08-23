@@ -1,24 +1,31 @@
 <template>
   <v-container>
-    <v-data-table :headers="headers" :items="items" class="elevation-1"/>
+    <item-list :headers="headers" url="/uploads" v-model="items">
+      <v-btn text tile color="primary">Upload</v-btn>
+      <template v-slot:item.size="{ item }">
+        {{ item.size | bytes }}
+      </template>
+      <template v-slot:item.createdAt="{ item }">
+        {{ item.createdAt | date }}
+      </template>
+    </item-list>
   </v-container>
 </template>
 
 <script>
+  import ItemList from '../components/ItemList';
+
   export default {
     name: 'Uploads',
+    components: { ItemList },
     data: () => ({
-      items: [],
       headers: [
         { text: 'Name', value: 'name' },
         { text: 'Created at', value: 'createdAt' },
         { text: 'Size', value: 'size' }
-      ]
-    }),
-    async mounted() {
-      const { data } = await this.$axios.get('/uploads');
-      this.items = data.items;
-    }
+      ],
+      items: []
+    })
   }
 </script>
 
