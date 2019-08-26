@@ -157,6 +157,8 @@
 <style scoped lang="scss">
   .upload {
     position: relative;
+    overflow: hidden;
+
     input {
       position: absolute;
       left: 0;

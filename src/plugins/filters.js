@@ -2,11 +2,12 @@ import Vue from 'vue';
 import format from 'date-fns/format';
 import bytes from 'bytes';
 import { basename } from 'path';
+import isNumber from 'lodash/isNumber';
 
 Vue.filter('date', value => format(new Date(value), 'dd MMM yyyy, kk:mm:ss'));
 Vue.filter('bytes', bytes);
 Vue.filter('duration', value => {
-  return value === 0 || value ? [
+  return isNumber(value) && !isNaN(value) && isFinite(value) ? [
     Math.floor(value / 3600),
     Math.floor(value / 60) % 60,
     Math.floor(value)  % 60
