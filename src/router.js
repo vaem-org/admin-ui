@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Login from './views/Login'
 import Assets from './views/Assets'
 import Uploads from './views/Uploads';
+import Encoders from './views/Encoders';
 
 Vue.use(Router);
 
@@ -24,6 +25,11 @@ const router = new Router({
       path: '/uploads',
       name: 'uploads',
       component: Uploads
+    },
+    {
+      path: '/encoders',
+      name: 'encoders',
+      component: Encoders
     }
   ]
 });

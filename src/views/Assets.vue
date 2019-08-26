@@ -34,6 +34,9 @@
           <v-list-item @click="copyId(item)">
             <v-list-item-title>Copy id</v-list-item-title>
           </v-list-item>
+          <v-list-item @click="remove(item)">
+            <v-list-item-title>Remove</v-list-item-title>
+          </v-list-item>
         </v-list>
       </template>
       <template v-slot:item.labels="{ item }">
@@ -77,7 +80,7 @@
     <v-dialog v-model="player" max-width="1024px">
       <v-card>
         <v-responsive>
-          <vaem-player :asset-id="playerItem._id" v-if="playerItem"/>
+          <vaem-player :asset-id="playerItem._id" v-if="player && playerItem"/>
         </v-responsive>
       </v-card>
     </v-dialog>
@@ -217,6 +220,10 @@
         console.log(target.files);
         await this.axios.put(`/assets/${item._id}/subtitles/${language}`, target.files[0]);
         target.value = '';
+      },
+
+      async remove(item) {
+        await this.$axios.delete(`/assets/${item._id}`);
       }
     }
   }
@@ -235,6 +242,7 @@
       right: 0;
       bottom: 0;
       cursor: pointer;
+      opacity: 0;
     }
   }
 </style>
