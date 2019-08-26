@@ -5,11 +5,6 @@
       v-model="drawer"
       app
     >
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title>Asset manager</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
       <v-list
         nav
         link
@@ -35,6 +30,12 @@
     <v-content>
       <router-view/>
     </v-content>
+    <v-footer app>
+      <v-btn icon small :to="{path:'/encoders/'}" text class="mr-2"><v-icon small>mdi-server-network</v-icon></v-btn>
+      <span>Asset manager</span>
+      <v-spacer/>
+      <span class="mr-2">&copy; {{ year }}</span>
+    </v-footer>
   </v-app>
 </template>
 
@@ -42,7 +43,8 @@
 export default {
   name: 'App',
   data: () => ({
-    drawer: true
+    drawer: true,
+    year: (new Date()).getFullYear()
   }),
 };
 </script>

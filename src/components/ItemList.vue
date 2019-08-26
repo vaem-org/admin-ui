@@ -66,12 +66,12 @@
       },
       options: {
         handler() {
-          this.update().catch(e => console.error(e));
+          this.update({force: false}).catch(e => console.error(e));
         },
         deep: true
       },
       search() {
-        this.update().catch(e => console.error(e));
+        this.update({force: false}).catch(e => console.error(e));
       },
 
       value(newValue) {
@@ -95,13 +95,21 @@
       this.selected = this.value || [];
     },
     methods: {
-      update: debounce(async function() {
+      update: debounce(async function({item, force=true}={force:true}) {
+        if (item) {
+          const index = this.items.findIndex(_item => item.id === _item.id);
+          if (index !== -1) {
+            this.$set(this.items, index, item);
+          }
+          return;
+        }
+
         const params = {
           ...pick(this.options, ['sortBy', 'sortDesc', 'page', 'itemsPerPage']),
           q: this.search
         };
 
-        if (!isEqual(this.previousParams, params)) {
+        if (!isEqual(this.previousParams, params) || force) {
           const { data } = await this.$axios.get(this.url, {
             params
           });

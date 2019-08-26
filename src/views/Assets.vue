@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <item-list :headers="headers" v-model="items" url="/assets">
+    <item-list :headers="headers" v-model="items" url="/assets" ref="items">
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="preview(items[0])">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" :href="downloadUrl(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="open(items[0])">Edit</v-btn>
@@ -19,13 +19,13 @@
           <v-list-item @click="addMissingBitrates(item)">
             <v-list-item-title>Add missing bitrates</v-list-item-title>
           </v-list-item>
-          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="lang" @click="">
+          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`upload-${lang}`">
             <v-list-item-title class="file">
               <input type="file" @change="uploadSubtitles(item, lang, $event)">
               Upload subtitles ({{ lang }})
             </v-list-item-title>
           </v-list-item>
-          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="lang" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadUrl(item, lang)">
+          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`download-${lang}`" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadUrl(item, lang)">
             <v-list-item-title>Download subtitles ({{ lang }})</v-list-item-title>
           </v-list-item>
           <v-list-item @click="showInfo(item)">
@@ -224,6 +224,7 @@
 
       async remove(item) {
         await this.$axios.delete(`/assets/${item._id}`);
+        this.$refs.items.update({force: true});
       }
     }
   }

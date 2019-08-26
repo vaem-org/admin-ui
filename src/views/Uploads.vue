@@ -1,44 +1,167 @@
 <template>
   <v-container>
-    <item-list :headers="headers" url="/uploads" v-model="items">
-      <v-btn text tile color="primary">Upload</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length===0" @click="addToQueue">Add to queue</v-btn>
+    <item-list :headers="headers" url="/uploads" v-model="items" ref="items">
+      <v-btn text tile color="primary" class="upload">
+        <input type="file" multiple @change="uploadFiles">
+        Upload
+      </v-btn>
+      <v-btn text tile color="primary" :disabled="items.length===0 || items.filter(item => item.type === 'video').length !== items.length" @click="addToQueue(items)">Add to queue</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='video'" @click="openStreamsDialog(items[0])">Select audio streams</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='subtitle'" @click="openAssignToAssetDialog(items[0])">Assign to asset</v-btn>
+      <template v-slot:contextMenu="{ item }">
+        <v-list>
+          <v-list-item v-if="item.type==='video'" @click="addToQueue([item])">
+            <v-list-item-title>Add to queue</v-list-item-title>
+          </v-list-item>
+          <v-list-item v-if="item.type==='video'" @click="openAddToQueueDialog(item)">
+            <v-list-item-title>Add to queue (advanced)</v-list-item-title>
+          </v-list-item>
+          <v-list-item v-if="item.type==='video'" @click="openStreamsDialog(item)">
+            <v-list-item-title>Select audio streams</v-list-item-title>
+          </v-list-item>
+          <v-list-item v-if="item.type==='subtitle'" @click="openAssignToAssetDialog(item)">
+            <v-list-item-title>Assign to asset</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="remove([item])">
+            <v-list-item-title>Remove</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </template>
       <template v-slot:item.size="{ item }">
         {{ item.size | bytes }}
       </template>
       <template v-slot:item.createdAt="{ item }">
         {{ item.createdAt | date }}
       </template>
+      <template v-slot:item.state="{ item }">
+        <v-progress-circular v-if="item.state==='uploading'" indeterminate size="30"/>
+        {{ item.state!=='uploading' ? item.state : '' }}
+      </template>
+      <template v-slot:item.progress="{ item }">
+        <v-progress-linear :value="item.uploaded / item.size * 100"
+                           :color="item.state==='complete' ? 'success' : 'primary'"/>
+      </template>
     </item-list>
+    <streams-dialog v-model="streamsDialog" :item="streamsItem"/>
+    <assign-to-asset-dialog v-model="assignToAssetDialog" :item="assignToAssetItem"/>
+    <add-to-queue-dialog v-model="addToQueueDialog" :item="addToQueueItem"/>
   </v-container>
 </template>
 
 <script>
-  import ItemList from '../components/ItemList';
+  import ItemList from '@/components/ItemList';
+  import StreamsDialog from '@/components/uploads/StreamsDialog';
+  import AssignToAssetDialog from '@/components/uploads/AssignToAssetDialog';
+  import get from 'lodash/get';
+  import keyBy from 'lodash/keyBy';
+  import pick from 'lodash/pick';
+  import io from 'socket.io-client';
+  import AddToQueueDialog from '@/components/uploads/AddToQueueDialog';
 
   export default {
     name: 'Uploads',
-    components: { ItemList },
+    components: { AddToQueueDialog, AssignToAssetDialog,  StreamsDialog, ItemList },
     data: () => ({
       headers: [
         { text: 'Name', value: 'name' },
+        { text: 'Progress', value: 'progress' },
         { text: 'Created at', value: 'createdAt' },
-        { text: 'Size', value: 'size' }
+        { text: 'Size', value: 'size' },
+        { text: 'State', value: 'state' }
       ],
-      items: []
+      items: [],
+      streamsDialog: false,
+      streamsItem: {},
+
+      assignToAssetDialog: false,
+      assignToAssetItem: {},
+
+      addToQueueDialog: false,
+      addToQueueItem: {}
     }),
     methods: {
-      async addToQueue() {
-        for(let upload of this.items) {
+      async addToQueue(items) {
+        for(let upload of items) {
           await this.$axios.post('/encoders/start-job', {
             fileId: upload._id
           });
         }
+      },
+
+      openStreamsDialog(item) {
+        this.streamsItem = item;
+        this.streamsDialog = true;
+      },
+
+      openAssignToAssetDialog(item) {
+        this.assignToAssetItem = item;
+        this.assignToAssetDialog = true;
+      },
+
+      async remove(items) {
+        await this.$axios.post('/uploads/remove', items.map(item => item._id));
+        this.$refs.items.update();
+      },
+
+      async uploadFiles(event) {
+        const files = get(event, 'dataTransfer.files', get(event, 'target.files', []));
+
+        const items = keyBy((await this.$axios.post('/uploads/prepare', Array.from(files).map(
+          file => pick(file, ['size', 'name'])
+        ))).data, 'name');
+
+        for (let file of files) {
+          const offset = items[file.name].uploaded || 0;
+          await this.$axios.put(`/uploads/${file.name}`, offset !== 0 ? file.slice(offset) : file, {
+            params: {
+              size: file.size,
+              offset
+            }
+          });
+        }
+
+        if (event.target) {
+          event.target.value = '';
+        }
+      },
+
+      openAddToQueueDialog(item) {
+        this.addToQueueItem = item;
+        this.addToQueueDialog = true;
       }
+    },
+
+    mounted() {
+      this.io = io(`${process.env.VUE_APP_API_URL}/uploads`);
+      this.io.on('progress', data => {
+        this.$refs.items.update({item: data});
+      });
+      this.io.on('created', () => {
+        console.log('Item created');
+        this.$refs.items.update();
+      });
+    },
+
+    destroyed() {
+      this.io.close();
+      this.io = null;
     }
   }
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
+  .upload {
+    position: relative;
+    input {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0;
+      margin-left: -140px;
+      width: calc(100% + 140px);
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
 </style>
