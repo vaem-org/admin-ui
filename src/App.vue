@@ -31,20 +31,38 @@
       <router-view/>
     </v-content>
     <v-footer app>
-      <v-btn icon small :to="{path:'/encoders/'}" text class="mr-2"><v-icon small>mdi-server-network</v-icon></v-btn>
+      <v-btn icon small :to="{path:'/encoders/'}" text class="mr-2">
+        <v-icon small>mdi-server-network</v-icon>
+      </v-btn>
       <span>Asset manager</span>
       <v-spacer/>
       <span class="mr-2">&copy; {{ year }}</span>
     </v-footer>
+    <v-snackbar v-model="snackbar" :timeout="4000" color="success">
+      {{ snackbarText }}
+    </v-snackbar>
   </v-app>
 </template>
 
 <script>
-export default {
-  name: 'App',
-  data: () => ({
-    drawer: true,
-    year: (new Date()).getFullYear()
-  }),
-};
+  import io from 'socket.io-client';
+
+  export default {
+    name: 'App',
+    data: () => ({
+      drawer: true,
+      year: (new Date()).getFullYear(),
+      snackbar: false,
+      snackbarText: ''
+    }),
+
+    mounted() {
+      this.io = io(`${process.env.VUE_APP_API_URL}/global`);
+
+      this.io.on('info', text => {
+        this.snackbarText = text;
+        this.snackbar = true;
+      });
+    }
+  };
 </script>
