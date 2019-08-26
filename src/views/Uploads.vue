@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container @drop.stop.prevent="uploadFiles" @dragover.prevent="dragover">
     <item-list :headers="headers" url="/uploads" v-model="items" ref="items">
       <v-btn text tile color="primary" class="upload">
         <input type="file" multiple @change="uploadFiles">
@@ -67,7 +67,8 @@
         { text: 'Progress', value: 'progress' },
         { text: 'Created at', value: 'createdAt' },
         { text: 'Size', value: 'size' },
-        { text: 'State', value: 'state' }
+        { text: 'State', value: 'state' },
+        { text: 'Type', value: 'type'}
       ],
       items: [],
       streamsDialog: false,
@@ -80,6 +81,10 @@
       addToQueueItem: {}
     }),
     methods: {
+      dragover(event) {
+        event.dataTransfer.dropEffect = 'copy';
+      },
+
       async addToQueue(items) {
         for(let upload of items) {
           await this.$axios.post('/encoders/start-job', {
@@ -163,5 +168,9 @@
       opacity: 0;
       cursor: pointer;
     }
+  }
+
+  .container {
+    height: 100%;
   }
 </style>
