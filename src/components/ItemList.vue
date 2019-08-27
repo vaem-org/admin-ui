@@ -20,6 +20,7 @@
       v-model="selected"
       item-key="_id"
       @click:row="selected=[$event]"
+      :loading="loading"
     >
       <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">
         <slot :name="name" v-bind="slotData" v-if="name!=='default'"/>
@@ -48,7 +49,8 @@
     props: {
       headers: Array,
       url: String,
-      value: Array
+      value: Array,
+      loading: Boolean
     },
     data: () => ({
       search: '',

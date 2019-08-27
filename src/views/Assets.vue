@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <item-list :headers="headers" v-model="items" url="/assets" ref="items">
+    <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="preview(items[0])">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" :href="downloadUrl(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="open(items[0])">Edit</v-btn>
@@ -19,12 +19,14 @@
           <v-list-item @click="addMissingBitrates(item)">
             <v-list-item-title>Add missing bitrates</v-list-item-title>
           </v-list-item>
-          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`upload-${lang}`" v-if="item.state === 'processed'">
+          <div v-if="item.state === 'processed'">
+          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`upload-${lang}`">
             <v-list-item-title class="file">
               <input type="file" @change="uploadSubtitles(item, lang, $event)">
               Upload subtitles ({{ lang }})
             </v-list-item-title>
           </v-list-item>
+          </div>
           <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`download-${lang}`" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadUrl(item, lang)">
             <v-list-item-title>Download subtitles ({{ lang }})</v-list-item-title>
           </v-list-item>
@@ -92,11 +94,12 @@
 </template>
 
 <script>
-  import ItemList from '../components/ItemList';
   import clone from 'lodash/clone';
-  import setClipboard from '../util/set-clipboard';
-  import VaemPlayer from '../components/VaemPlayer';
+  import { basename } from 'path';
   import socketio from 'socket.io-client';
+  import ItemList from '@/components/ItemList';
+  import setClipboard from '@/util/set-clipboard';
+  import VaemPlayer from '@/components/VaemPlayer';
   import ShareDialog from '@/components/assets/ShareDialog';
 
   export default {
@@ -123,7 +126,8 @@
         player: false,
 
         shareItem: {},
-        shareDialog: false
+        shareDialog: false,
+        loading: false
       };
     },
     methods: {
@@ -171,10 +175,10 @@
       },
 
       async uploadSubtitles(item, language, {target}) {
-        console.log(target.value);
-        console.log(target.files);
-        await this.axios.put(`/assets/${item._id}/subtitles/${language}`, target.files[0]);
+        this.loading = true;
+        await this.axios.put(`/assets/${item._id}/subtitles/${language}/${basename(target.files[0].name)}`, target.files[0]);
         target.value = '';
+        this.loading = false;
       },
 
       async remove(item) {

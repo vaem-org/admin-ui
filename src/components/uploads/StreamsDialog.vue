@@ -92,7 +92,7 @@
         switch (item.channels) {
           case 1:
             each(channels, (channelNames, key) => {
-              const channelIndex = _.get(this.streams, ['audioStreams', key], []).indexOf(item.index);
+              const channelIndex = get(this.streams, ['audioStreams', key], []).indexOf(item.index);
               if (channelIndex !== -1) {
                 result = channelNames[channelIndex];
               }
