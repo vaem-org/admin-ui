@@ -2,7 +2,7 @@
   <v-container>
     <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="preview(items[0])">Preview</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" :href="downloadUrl(items[0])">Download</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="open(items[0])">Edit</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openShareDialog(items[0])">Share</v-btn>
       <template v-slot:contextMenu="{ item }">
@@ -27,7 +27,7 @@
             </v-list-item-title>
           </v-list-item>
           </div>
-          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`download-${lang}`" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadUrl(item, lang)">
+          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`download-${lang}`" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadSubtitleUrl(item, lang)">
             <v-list-item-title>Download subtitles ({{ lang }})</v-list-item-title>
           </v-list-item>
           <v-list-item @click="showInfo(item)">
@@ -137,18 +137,14 @@
         this.popup = true;
       },
 
-      downloadUrl(item, subtitleLanguage) {
+      downloadSubtitleUrl(item, subtitleLanguage) {
         if (!item) {
           return '';
         }
 
         const base = `${process.env.VUE_APP_API_URL}/assets/${item._id}/`;
         const query = `?token=${encodeURIComponent(localStorage.getItem('token'))}`;
-        if (subtitleLanguage) {
-          return `${base}subtitles/${subtitleLanguage}${query}`;
-        } else {
-          return `${base}stream.ts${query}`
-        }
+        return `${base}subtitles/${subtitleLanguage}${query}`;
       },
 
       copyId(item) {
@@ -191,6 +187,10 @@
         this.popup = false;
         this.$refs.items.update();
       },
+
+      async download(item) {
+        location.href = process.env.VUE_APP_API_URL + (await this.$axios.get(`/assets/${item._id}/download`)).data;
+      }
     },
 
     mounted() {
