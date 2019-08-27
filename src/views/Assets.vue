@@ -4,7 +4,7 @@
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="preview(items[0])">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" :href="downloadUrl(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="open(items[0])">Edit</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1" @click="shareItem(items[0])">Share</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1" @click="openShareDialog(items[0])">Share</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
           <v-list-item @click="preview(item)">
@@ -13,7 +13,7 @@
           <v-list-item @click="open(item)">
             <v-list-item-title>Edit</v-list-item-title>
           </v-list-item>
-          <v-list-item @click="shareItem(item)">
+          <v-list-item @click="openShareDialog(item)">
             <v-list-item-title>Share</v-list-item-title>
           </v-list-item>
           <v-list-item @click="addMissingBitrates(item)">
@@ -87,40 +87,7 @@
         </v-responsive>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="shareDialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <span>Share <em>{{ sharedItem.title }}</em></span>
-        </v-card-title>
-        <v-form @submit.prevent="shareItem" v-if="!shareUrl">
-          <v-card-text>
-            <v-text-field label="Choose a password" v-model="share.password" ref="sharePassword"/>
-            <v-text-field label="Number of weeks valid" v-model="share.weeksValid" type="number"/>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer/>
-            <v-btn @click="shareDialog=false">Cancel</v-btn>
-            <v-btn type="submit" color="primary">Get url</v-btn>
-          </v-card-actions>
-        </v-form>
-        <div v-if="shareUrl">
-          <v-card-text>
-            <v-layout row justify-center align-content-center>
-              <pre class="ellipsis">{{ shareUrl }}</pre>
-              <v-flex>
-                <v-btn small round icon @click="copyShareUrl">
-                  <v-icon>mdi-content-copy</v-icon>
-                </v-btn>
-              </v-flex>
-            </v-layout>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer/>
-            <v-btn color="primary" @click="shareDialog = false">Close</v-btn>
-          </v-card-actions>
-        </div>
-      </v-card>
-    </v-dialog>
+    <share-dialog v-model="shareDialog" :item="shareItem"/>
   </v-container>
 </template>
 
@@ -130,10 +97,11 @@
   import setClipboard from '../util/set-clipboard';
   import VaemPlayer from '../components/VaemPlayer';
   import socketio from 'socket.io-client';
+  import ShareDialog from '@/components/assets/ShareDialog';
 
   export default {
     name: 'Assets',
-    components: { VaemPlayer, ItemList },
+    components: { ShareDialog, VaemPlayer, ItemList },
     data() {
       return {
         items: [],
@@ -154,12 +122,8 @@
         playerItem: null,
         player: false,
 
-        sharedItem: {},
-        shareDialog: false,
-        share: {
-          weeksValid: 2
-        },
-        shareUrl: false,
+        shareItem: {},
+        shareDialog: false
       };
     },
     methods: {
@@ -197,23 +161,9 @@
         this.player = true;
       },
 
-      async shareItem(item) {
-        if (this.shareDialog) {
-          this.shareUrl = (await this.$axios.post(`assets/${this.sharedItem._id}/share-url`, this.share)).data;
-        }
-        else {
-          this.sharedItem = clone(item);
-          this.share = {
-            weeksValid: 2
-          };
-          this.shareUrl = false;
-          this.shareDialog = true;
-          this.$nextTick(() => this.$refs.sharePassword.focus());
-        }
-      },
-
-      copyShareUrl() {
-        setClipboard(this.shareUrl);
+      openShareDialog(item) {
+        this.shareItem = item;
+        this.shareDialog = true;
       },
 
       async addMissingBitrates(item) {

@@ -1,5 +1,8 @@
 <template>
-  <v-app>
+  <v-app v-if="$route.meta.emptyLayout">
+    <router-view/>
+  </v-app>
+  <v-app v-else>
     <v-navigation-drawer
       fixed
       v-model="drawer"

@@ -4,6 +4,7 @@ import Login from './views/Login'
 import Assets from './views/Assets'
 import Uploads from './views/Uploads';
 import Encoders from './views/Encoders';
+import Player from './views/Player';
 
 Vue.use(Router);
 
@@ -30,6 +31,14 @@ const router = new Router({
       path: '/encoders',
       name: 'encoders',
       component: Encoders
+    },
+    {
+      path: '/player/:assetId/:timestamp/:signature',
+      name: 'player',
+      component: Player,
+      meta: {
+        emptyLayout: true
+      }
     }
   ]
 });

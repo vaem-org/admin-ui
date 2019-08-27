@@ -25,12 +25,14 @@
 <script>
   import videojs from 'video.js';
   import 'video.js/dist/video-js.css';
+  import each from 'lodash/each';
 
   export default {
     name: 'VaemPlayer',
     props: {
       assetId: String,
-      fullscreen: {type: Boolean, default: false}
+      fullscreen: {type: Boolean, default: false},
+      item: Object
     },
     computed: {
       playerClass() {
@@ -56,18 +58,7 @@
             this.player.removeRemoteTextTrack(track);
           }
 
-          let item;
-
-          if (this.$route.params.timestamp) {
-            const {timestamp, signature} = this.$route.params;
-
-            item = {
-              streamUrl: `${process.env.VUE_APP_API_URL}/streams/${timestamp}/${signature}/${this.assetId}.m3u8`,
-              subtitles: (await this.axios.get(`/streams/${timestamp}/${signature}/${this.assetId}/subtitles`)).data
-            }
-          } else {
-            item = (await this.axios.get(`/streams/${this.assetId}/item`)).data;
-          }
+          const item = this.item || (await this.axios.get(`/streams/${this.assetId}/item`)).data;
 
           this.player.src({
             type: 'application/x-mpegURL',
@@ -76,20 +67,20 @@
 
           const subtitles = (item || {}).subtitles;
           if (subtitles) {
-            const first = Object.keys(subtitles)[0];
-            this.player.addRemoteTextTrack({
-              kind: 'subtitles',
-              srclang: first,
-              label: 'Dutch',
-              src: `${process.env.VUE_APP_API_URL}/stream/subtitles/${this.assetId}.${first}.vtt`,
-              default: true
+            each(subtitles, (url, language) => {
+              this.player.addRemoteTextTrack({
+                kind: 'subtitles',
+                srclang: language,
+                src: process.env.VUE_APP_API_URL + url,
+                default: language === 'nl'
+              });
             });
           }
         }
       },
     mounted() {
       this.player = videojs(this.$refs['video'], null, () => {
-        if (this.assetId) {
+        if (this.assetId || this.item) {
           this.load();
         }
       });
