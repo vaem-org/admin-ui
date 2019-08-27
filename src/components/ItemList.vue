@@ -99,7 +99,10 @@
         if (item) {
           const index = this.items.findIndex(_item => item.id === _item.id);
           if (index !== -1) {
-            this.$set(this.items, index, item);
+            this.$set(this.items, index, {
+              ...this.items[index],
+              ...item
+            });
           }
           return;
         }

@@ -39,6 +39,9 @@
           </v-list-item>
         </v-list>
       </template>
+      <template v-slot:item.progress="{ item }">
+        {{ (item.bitrates || []).length }} / {{ (item.jobs || []).length }}
+      </template>
       <template v-slot:item.labels="{ item }">
         <v-chip v-for="label of item.labels" :key="label" class="my-1">{{ label }}</v-chip>
       </template>
@@ -60,7 +63,7 @@
           </v-card-title>
           <v-card-text>
             <v-text-field label="Title" v-model="item.title"/>
-            <v-select label="Labels" v-model="item.labels" tags chips deletable-chips :items="labels" multiple/>
+            <v-combobox label="Labels" v-model="item.labels" tags chips deletable-chips :items="labels" multiple/>
           </v-card-text>
           <v-card-actions>
             <v-spacer/>
@@ -126,6 +129,7 @@
   import clone from 'lodash/clone';
   import setClipboard from '../util/set-clipboard';
   import VaemPlayer from '../components/VaemPlayer';
+  import socketio from 'socket.io-client';
 
   export default {
     name: 'Assets',
@@ -137,6 +141,7 @@
           { text: 'Title', value: 'title' },
           { text: 'Labels', value: 'labels' },
           { text: 'State', value: 'state' },
+          { text: 'Progress', value: 'progress' },
           { text: 'Date', value: 'createdAt' },
           { text: 'Duration', value: 'videoParameters.duration' },
           { text: 'Subtitles', value: 'subtitles' }
@@ -225,7 +230,32 @@
       async remove(item) {
         await this.$axios.delete(`/assets/${item._id}`);
         this.$refs.items.update({force: true});
-      }
+      },
+
+      async saveItem() {
+        await this.$axios.post(`/assets/${this.item._id}`, this.item);
+        this.popup = false;
+        this.$refs.items.update();
+      },
+    },
+
+    mounted() {
+      this.io = socketio(`${process.env.VUE_APP_API_URL}/global`);
+
+      this.io.on('job-completed', (item) => {
+        this.$refs.items.update({
+          item
+        });
+      });
+
+      this.io.on('asset-added', () => {
+        this.$refs.items.update();
+      })
+    },
+
+    destroyed() {
+      this.io.close();
+      this.io = null;
     }
   }
 </script>
