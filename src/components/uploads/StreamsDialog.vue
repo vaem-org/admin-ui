@@ -31,6 +31,11 @@
   import set from 'lodash/set';
   import each from 'lodash/each';
 
+  const channels = {
+    'stereo': ['Stereo left', 'Stereo right'],
+    'surround': ['Front left', 'Front right', 'Center', 'LFE', 'Surround left', 'Surround right']
+  };
+
   export default {
     name: 'StreamsDialog',
     props: {
@@ -86,8 +91,8 @@
 
         switch (item.channels) {
           case 1:
-            each(item.channels, (channelNames, key) => {
-              const channelIndex = _.get(this.streams, ['streams', 'audioStreams', key], []).indexOf(item.index);
+            each(channels, (channelNames, key) => {
+              const channelIndex = _.get(this.streams, ['audioStreams', key], []).indexOf(item.index);
               if (channelIndex !== -1) {
                 result = channelNames[channelIndex];
               }
@@ -106,9 +111,9 @@
       },
 
       setChannel(selected, item) {
-        switch (item.channels) {
+        switch (this.channels) {
           case 1:
-            each(item.channels, (channelNames, key) => {
+            each(channels, (channelNames, key) => {
               const channelIndex = channelNames.indexOf(selected);
               set(this.streams, ['audioStreams', key, channelIndex], item.index);
             });
@@ -136,7 +141,7 @@
       getAudioOptions(item) {
         switch (item.channels) {
           case 1:
-            return [...item.channels.stereo, ...item.channels.surround];
+            return [...channels.stereo, ...channels.surround];
           case 2:
             return ['Stereo'];
           case 6:
@@ -146,6 +151,9 @@
             return [];
         }
       }
+    },
+    mounted() {
+      this.$emit('input', this.dialog);
     }
   }
 </script>

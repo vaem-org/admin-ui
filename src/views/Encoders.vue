@@ -121,7 +121,7 @@
           return 0;
         }
         const progress = this.calcProgress(item);
-        return Math.max(0, ((item.progress.time - item.currentlyProcessing.time)) / progress * (100 - progress) / 1000 * 60);
+        return Math.max(0, ((item.progress.time - item.currentlyProcessing.time)) / progress * (100 - progress) / 1000);
       },
 
       async remove(index) {
