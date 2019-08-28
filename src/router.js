@@ -5,12 +5,13 @@ import Assets from './views/Assets'
 import Uploads from './views/Uploads';
 import Encoders from './views/Encoders';
 import Player from './views/Player';
+import config from '@/config';
 
 Vue.use(Router);
 
 const router = new Router({
   mode: 'history',
-  base: process.env.BASE_URL,
+  base: config.baseUrl,
   routes: [
     {
       path: '/',

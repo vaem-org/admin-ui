@@ -22,6 +22,7 @@
   import get from 'lodash/get';
   import setClipboard from '@/util/set-clipboard';
   import events from '@/events';
+  import config from '@/config';
 
   export default {
     extends: Dialog,
@@ -33,7 +34,7 @@
       embedCode() {
         const height = get(this.item, 'videoParameters.height', 0);
         const width = get(this.item, 'videoParameters.width', 0);
-        const iframe = `<iframe src="${process.env.VUE_APP_EMBED_URL}/${this.item._id}" frameborder="0"></iframe>`;
+        const iframe = `<iframe src="${config.embedUrl}/${this.item._id}" frameborder="0"></iframe>`;
         if (height !== 0) {
           const paddingTop = Math.round(height / width * 100) + '%';
           return `<div style="padding-top: ${paddingTop}">${iframe}</div>`

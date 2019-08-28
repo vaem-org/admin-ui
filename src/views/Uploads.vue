@@ -58,6 +58,7 @@
   import clone from 'lodash/clone';
   import io from 'socket.io-client';
   import AddToQueueDialog from '@/components/uploads/AddToQueueDialog';
+  import config from '@/config';
 
   export default {
     name: 'Uploads',
@@ -126,7 +127,7 @@
     },
 
     mounted() {
-      this.io = io(`${process.env.VUE_APP_API_URL}/uploads`);
+      this.io = io(`${config.apiUrl}/uploads`);
       this.io.on('progress', data => {
         this.$refs.items.update({item: data});
       });

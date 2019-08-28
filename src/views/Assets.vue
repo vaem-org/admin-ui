@@ -88,6 +88,7 @@
   import ShareDialog from '@/components/assets/ShareDialog';
   import EditAssetDialog from '@/components/assets/EditAssetDialog';
   import EmbedDialog from '@/components/assets/EmbedDialog';
+  import config from '@/config';
 
   export default {
     name: 'Assets',
@@ -112,7 +113,7 @@
         embedDialog: false,
 
         loading: false,
-        showEmbedButton: !!process.env.VUE_APP_EMBED_URL
+        showEmbedButton: !!config.embedUrl
       };
     },
     methods: {
@@ -127,7 +128,7 @@
           return '';
         }
 
-        const base = `${process.env.VUE_APP_API_URL}/assets/${item._id}/`;
+        const base = `${config.apiUrl}/assets/${item._id}/`;
         const query = `?token=${encodeURIComponent(localStorage.getItem('token'))}`;
         return `${base}subtitles/${subtitleLanguage}${query}`;
       },
@@ -159,12 +160,12 @@
       },
 
       async download(item) {
-        location.href = process.env.VUE_APP_API_URL + (await this.$axios.get(`/assets/${item._id}/download`)).data;
+        location.href = config.apiUrl + (await this.$axios.get(`/assets/${item._id}/download`)).data;
       }
     },
 
     mounted() {
-      this.io = socketio(`${process.env.VUE_APP_API_URL}/global`);
+      this.io = socketio(`${config.apiUrl}/global`);
 
       this.io.on('job-completed', (item) => {
         this.$refs.items.update({

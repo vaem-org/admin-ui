@@ -48,6 +48,7 @@
 </template>
 
 <script>
+  import config from '@/config';
   import io from 'socket.io-client';
   import events from '@/events';
 
@@ -61,7 +62,7 @@
     }),
 
     mounted() {
-      this.io = io(`${process.env.VUE_APP_API_URL}/global`);
+      this.io = io(`${config.apiUrl}/global`);
 
       this.io.on('info', text => {
         this.snackbarText = text;

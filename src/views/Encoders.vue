@@ -61,6 +61,7 @@
   import io from 'socket.io-client';
   import camelCase from 'lodash/camelCase';
   import get from 'lodash/get';
+  import config from '@/config';
 
   export default {
     name: 'Encoders',
@@ -136,7 +137,7 @@
       this.encoders = (await this.$axios.get('/encoders')).data;
       this.queue = (await this.$axios.get('/encoders/queue')).data;
 
-      this.io = io(`${process.env.VUE_APP_API_URL}/encoders-io`);
+      this.io = io(`${config.apiUrl}/encoders-io`);
 
       const socket = this.io;
 

@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import config from '@/config';
+
 export default {
   name: 'login',
   data: () => ({
@@ -20,7 +22,7 @@ export default {
       const width = 450;
       const height = 500;
       this.popup = window.open(
-        `${process.env.VUE_APP_API_URL}/login/google`, 'login',
+        `${config.apiUrl}/login/google`, 'login',
         'menubar=0,toolbar=0,personalbar=0,' +
         `width=${width},height=${height},left=${(screen.width-width)/2},top=${(screen.height-height)/2}`
       );
