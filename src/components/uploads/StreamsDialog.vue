@@ -60,7 +60,7 @@
           value: 'codec_type'
         }, {
           text: 'Codec',
-          value: 'codec_long_name'
+          value: 'codec_name'
         }, {
           text: 'Channel',
           value: 'channel_layout'

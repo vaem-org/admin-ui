@@ -30,6 +30,9 @@
           <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`download-${lang}`" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadSubtitleUrl(item, lang)">
             <v-list-item-title>Download subtitles ({{ lang }})</v-list-item-title>
           </v-list-item>
+          <v-list-item @click="getPublicUrl(item)">
+            <v-list-item-title>Get public URL</v-list-item-title>
+          </v-list-item>
           <v-list-item @click="showInfo(item)">
             <v-list-item-title>Show info</v-list-item-title>
           </v-list-item>
@@ -57,24 +60,7 @@
         {{ item.videoParameters.duration | duration }}
       </template>
     </item-list>
-    <v-dialog v-model="popup" max-width="600px">
-      <v-card>
-        <v-form @submit.prevent="saveItem">
-          <v-card-title>
-            <span>Edit asset</span>
-          </v-card-title>
-          <v-card-text>
-            <v-text-field label="Title" v-model="item.title"/>
-            <v-combobox label="Labels" v-model="item.labels" tags chips deletable-chips :items="labels" multiple/>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer/>
-            <v-btn @click="popup=false">Cancel</v-btn>
-            <v-btn type="submit" color="primary">Save</v-btn>
-          </v-card-actions>
-        </v-form>
-      </v-card>
-    </v-dialog>
+    <edit-asset-dialog v-model="editItemDialog" :item="item" @saved="$refs.items.update()"/>
     <v-dialog v-model="infoPopup" max-width="80%">
       <v-card>
         <v-card-text>
@@ -97,14 +83,16 @@
   import clone from 'lodash/clone';
   import { basename } from 'path';
   import socketio from 'socket.io-client';
+  import events from '@/events';
   import ItemList from '@/components/ItemList';
   import setClipboard from '@/util/set-clipboard';
   import VaemPlayer from '@/components/VaemPlayer';
   import ShareDialog from '@/components/assets/ShareDialog';
+  import EditAssetDialog from '@/components/assets/EditAssetDialog';
 
   export default {
     name: 'Assets',
-    components: { ShareDialog, VaemPlayer, ItemList },
+    components: { EditAssetDialog, ShareDialog, VaemPlayer, ItemList },
     data() {
       return {
         items: [],
@@ -118,8 +106,7 @@
           { text: 'Subtitles', value: 'subtitles' }
         ],
         item: {},
-        popup: false,
-        labels: [],
+        editItemDialog: false,
         infoPopup: false,
         infoItem: false,
         playerItem: null,
@@ -134,7 +121,7 @@
       async open(item) {
         this.labels = (await this.$axios.get('/assets/labels')).data;
         this.item = clone(item);
-        this.popup = true;
+        this.editItemDialog = true;
       },
 
       downloadSubtitleUrl(item, subtitleLanguage) {
@@ -174,6 +161,7 @@
         this.loading = true;
         await this.axios.put(`/assets/${item._id}/subtitles/${language}/${basename(target.files[0].name)}`, target.files[0]);
         target.value = '';
+        this.$refs.items.update();
         this.loading = false;
       },
 
@@ -182,14 +170,26 @@
         this.$refs.items.update({force: true});
       },
 
-      async saveItem() {
-        await this.$axios.post(`/assets/${this.item._id}`, this.item);
-        this.popup = false;
-        this.$refs.items.update();
-      },
-
       async download(item) {
         location.href = process.env.VUE_APP_API_URL + (await this.$axios.get(`/assets/${item._id}/download`)).data;
+      },
+
+      async getPublicUrl(item) {
+        let isPublic = item.public;
+
+        if (!isPublic && (await this.$confirm('Asset is not yet set to public. Do you want to set the asset to public?', {
+          title: 'Warning'
+        }))) {
+          await this.$axios.post(`/assets/${item._id}`, {
+            public: true
+          });
+          isPublic = true;
+        }
+
+        if (isPublic) {
+          setClipboard(`${process.env.VUE_APP_API_URL}/streams/-/-/${item._id}.m3u8`);
+          events.emit('toast', 'URL copied successfully');
+        }
       }
     },
 

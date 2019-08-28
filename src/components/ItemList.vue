@@ -118,8 +118,11 @@
           const { data } = await this.$axios.get(this.url, {
             params
           });
+          const selectedIds = this.selected.map(item => item._id);
           this.items = data.items;
           this.totalItems = data.totalItems;
+
+          this.selected = this.items.filter(item => selectedIds.includes(item._id));
 
           this.previousParams = params;
         }

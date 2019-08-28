@@ -49,6 +49,7 @@
 
 <script>
   import io from 'socket.io-client';
+  import events from '@/events';
 
   export default {
     name: 'App',
@@ -66,6 +67,11 @@
         this.snackbarText = text;
         this.snackbar = true;
       });
+
+      events.on('toast', text => {
+        this.snackbarText = text;
+        this.snackbar = true;
+      })
     }
   };
 </script>

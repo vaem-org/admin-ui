@@ -5,6 +5,7 @@ import store from './store'
 import router from './router'
 
 import vuetify from './plugins/vuetify';
+import './plugins/vuetify-confirm';
 import './plugins/filters';
 import './plugins/treeview';
 
