@@ -5,7 +5,7 @@
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="openDialog(items[0], 'editItem')">Edit</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'share')">Share</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'embed')">Embed</v-btn>
+      <v-btn v-if="showEmbedButton" text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'embed')">Embed</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
           <v-list-item @click="openDialog(item, 'preview')" v-if="item.state === 'processed'">
@@ -30,9 +30,6 @@
           </div>
           <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`download-${lang}`" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadSubtitleUrl(item, lang)">
             <v-list-item-title>Download subtitles ({{ lang }})</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="getPublicUrl(item)">
-            <v-list-item-title>Get public URL</v-list-item-title>
           </v-list-item>
           <v-list-item @click="openDialog(item, 'info')">
             <v-list-item-title>Show info</v-list-item-title>
@@ -85,7 +82,6 @@
   import clone from 'lodash/clone';
   import { basename } from 'path';
   import socketio from 'socket.io-client';
-  import events from '@/events';
   import ItemList from '@/components/ItemList';
   import setClipboard from '@/util/set-clipboard';
   import VaemPlayer from '@/components/VaemPlayer';
@@ -115,7 +111,8 @@
         shareDialog: false,
         embedDialog: false,
 
-        loading: false
+        loading: false,
+        showEmbedButton: !!process.env.VUE_APP_EMBED_URL
       };
     },
     methods: {
@@ -163,24 +160,6 @@
 
       async download(item) {
         location.href = process.env.VUE_APP_API_URL + (await this.$axios.get(`/assets/${item._id}/download`)).data;
-      },
-
-      async getPublicUrl(item) {
-        let isPublic = item.public;
-
-        if (!isPublic && (await this.$confirm('Asset is not yet set to public. Do you want to set the asset to public?', {
-          title: 'Warning'
-        }))) {
-          await this.$axios.post(`/assets/${item._id}`, {
-            public: true
-          });
-          isPublic = true;
-        }
-
-        if (isPublic) {
-          setClipboard(`${process.env.VUE_APP_API_URL}/streams/-/-/${item._id}.m3u8`);
-          events.emit('toast', 'URL copied successfully');
-        }
       }
     },
 

@@ -10,7 +10,10 @@ export default {
   watch: {
     async value(val) {
       if (val && this.initDialog) {
-        await this.initDialog();
+        if ((await this.initDialog()) === false) {
+          this.$emit('input', false);
+          return;
+        }
       }
       this.dialog = val;
     },
