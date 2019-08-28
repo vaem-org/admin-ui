@@ -43,6 +43,13 @@
     props: {
       item: Object
     },
+    watch: {
+      dialog(val) {
+        if (val) {
+          this.$nextTick(() => this.$refs.sharePassword.focus());
+        }
+      }
+    },
     data: () => ({
       shareUrl: '',
       password: '',
@@ -62,11 +69,6 @@
 
       copyShareUrl() {
         setClipboard(this.shareUrl);
-      },
-
-      async initDialog() {
-        await this.$nextTick();
-        this.$refs.sharePassword.focus();
       }
     }
   }

@@ -6,20 +6,20 @@
         Upload
       </v-btn>
       <v-btn text tile color="primary" :disabled="items.length===0 || items.filter(item => item.type === 'video').length !== items.length" @click="addToQueue(items)">Add to queue</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='video'" @click="openStreamsDialog(items[0])">Select audio streams</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='subtitle'" @click="openAssignToAssetDialog(items[0])">Assign to asset</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='video'" @click="openDialog(items[0], 'streams')">Select audio streams</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='subtitle'" @click="openDialog(items[0], 'assignToAsset')">Assign to asset</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
           <v-list-item v-if="item.type==='video'" @click="addToQueue([item])">
             <v-list-item-title>Add to queue</v-list-item-title>
           </v-list-item>
-          <v-list-item v-if="item.type==='video'" @click="openAddToQueueDialog(item)">
+          <v-list-item v-if="item.type==='video'" @click="openDialog(item, 'addToQueue')">
             <v-list-item-title>Add to queue (advanced)</v-list-item-title>
           </v-list-item>
-          <v-list-item v-if="item.type==='video'" @click="openStreamsDialog(item)">
+          <v-list-item v-if="item.type==='video'" @click="openDialog(item, 'streams')">
             <v-list-item-title>Select audio streams</v-list-item-title>
           </v-list-item>
-          <v-list-item v-if="item.type==='subtitle'" @click="openAssignToAssetDialog(item)">
+          <v-list-item v-if="item.type==='subtitle'" @click="openDialog(item, 'assignToAsset')">
             <v-list-item-title>Assign to asset</v-list-item-title>
           </v-list-item>
           <v-list-item @click="remove([item])">
@@ -42,9 +42,9 @@
                            :color="item.state==='complete' ? 'success' : 'primary'"/>
       </template>
     </item-list>
-    <streams-dialog v-model="streamsDialog" :item="streamsItem"/>
-    <assign-to-asset-dialog v-model="assignToAssetDialog" :item="assignToAssetItem"/>
-    <add-to-queue-dialog v-model="addToQueueDialog" :item="addToQueueItem"/>
+    <streams-dialog v-model="streamsDialog" :item="item"/>
+    <assign-to-asset-dialog v-model="assignToAssetDialog" :item="item"/>
+    <add-to-queue-dialog v-model="addToQueueDialog" :item="item"/>
   </v-container>
 </template>
 
@@ -55,6 +55,7 @@
   import get from 'lodash/get';
   import keyBy from 'lodash/keyBy';
   import pick from 'lodash/pick';
+  import clone from 'lodash/clone';
   import io from 'socket.io-client';
   import AddToQueueDialog from '@/components/uploads/AddToQueueDialog';
 
@@ -71,14 +72,12 @@
         { text: 'Type', value: 'type'}
       ],
       items: [],
+      item: {},
       streamsDialog: false,
-      streamsItem: {},
 
       assignToAssetDialog: false,
-      assignToAssetItem: {},
 
-      addToQueueDialog: false,
-      addToQueueItem: {}
+      addToQueueDialog: false
     }),
     methods: {
       dragover(event) {
@@ -93,14 +92,9 @@
         }
       },
 
-      openStreamsDialog(item) {
-        this.streamsItem = item;
-        this.streamsDialog = true;
-      },
-
-      openAssignToAssetDialog(item) {
-        this.assignToAssetItem = item;
-        this.assignToAssetDialog = true;
+      openDialog(item, prop) {
+        this.item = clone(item);
+        this[`${prop}Dialog`] = true;
       },
 
       async remove(items) {
@@ -128,11 +122,6 @@
         if (event.target) {
           event.target.value = '';
         }
-      },
-
-      openAddToQueueDialog(item) {
-        this.addToQueueItem = item;
-        this.addToQueueDialog = true;
       }
     },
 

@@ -1,20 +1,20 @@
 <template>
   <v-container>
     <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="preview(items[0])">Preview</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'preview')">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1" @click="open(items[0])">Edit</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openShareDialog(items[0])">Share</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openEmbedDialog(items[0])">Embed</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1" @click="openDialog(items[0], 'editItem')">Edit</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'share')">Share</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'embed')">Embed</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
-          <v-list-item @click="preview(item)" v-if="item.state === 'processed'">
+          <v-list-item @click="openDialog(item, 'preview')" v-if="item.state === 'processed'">
             <v-list-item-title>Preview</v-list-item-title>
           </v-list-item>
-          <v-list-item @click="open(item)">
+          <v-list-item @click="openDialog(item, 'editItem')">
             <v-list-item-title>Edit</v-list-item-title>
           </v-list-item>
-          <v-list-item @click="openShareDialog(item)" v-if="item.state === 'processed'">
+          <v-list-item @click="openDialog(item, 'share')" v-if="item.state === 'processed'">
             <v-list-item-title>Share</v-list-item-title>
           </v-list-item>
           <v-list-item @click="addMissingBitrates(item)">
@@ -34,7 +34,7 @@
           <v-list-item @click="getPublicUrl(item)">
             <v-list-item-title>Get public URL</v-list-item-title>
           </v-list-item>
-          <v-list-item @click="showInfo(item)">
+          <v-list-item @click="openDialog(item, 'info')">
             <v-list-item-title>Show info</v-list-item-title>
           </v-list-item>
           <v-list-item @click="copyId(item)">
@@ -62,22 +62,22 @@
       </template>
     </item-list>
     <edit-asset-dialog v-model="editItemDialog" :item="item" @saved="$refs.items.update()"/>
-    <v-dialog v-model="infoPopup" max-width="80%">
+    <v-dialog v-model="infoDialog" max-width="80%">
       <v-card>
         <v-card-text>
-          <tree-view :data="infoItem" class="py-3"/>
+          <tree-view :data="item" class="py-3"/>
         </v-card-text>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="player" max-width="1024px">
+    <v-dialog v-model="playerDialog" max-width="1024px">
       <v-card>
         <v-responsive>
-          <vaem-player :asset-id="playerItem._id" v-if="player && playerItem"/>
+          <vaem-player :asset-id="item._id" v-if="playerDialog && item"/>
         </v-responsive>
       </v-card>
     </v-dialog>
-    <share-dialog v-model="shareDialog" :item="shareItem"/>
-    <embed-dialog v-model="embedDialog" :item="embedItem"/>
+    <share-dialog v-model="shareDialog" :item="item"/>
+    <embed-dialog v-model="embedDialog" :item="item"/>
   </v-container>
 </template>
 
@@ -110,15 +110,9 @@
         ],
         item: {},
         editItemDialog: false,
-        infoPopup: false,
-        infoItem: false,
-        playerItem: null,
-        player: false,
-
-        shareItem: {},
+        infoDialog: false,
+        playerDialog: false,
         shareDialog: false,
-
-        embedItem: {},
         embedDialog: false,
 
         loading: false
@@ -145,19 +139,9 @@
         setClipboard(item._id);
       },
 
-      showInfo(item) {
-        this.infoPopup = true;
-        this.infoItem = item;
-      },
-
-      preview(item) {
-        this.playerItem = item;
-        this.player = true;
-      },
-
-      openShareDialog(item) {
-        this.shareItem = item;
-        this.shareDialog = true;
+      openDialog(item, prop) {
+        this.item = clone(item);
+        this[`${prop}Dialog`] = true;
       },
 
       async addMissingBitrates(item) {
@@ -197,11 +181,6 @@
           setClipboard(`${process.env.VUE_APP_API_URL}/streams/-/-/${item._id}.m3u8`);
           events.emit('toast', 'URL copied successfully');
         }
-      },
-
-      openEmbedDialog(item) {
-        this.embedItem = item;
-        this.embedDialog = true;
       }
     },
 
