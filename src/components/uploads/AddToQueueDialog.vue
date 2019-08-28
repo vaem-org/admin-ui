@@ -12,6 +12,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
+          <v-btn @click="dialog=false">Cancel</v-btn>
           <v-btn color="primary" type="submit">OK</v-btn>
         </v-card-actions>
       </v-form>
@@ -51,6 +52,9 @@
         });
         this.dialog = false;
       }
+    },
+    mounted() {
+      this.$emit('input', this.dialog);
     }
   }
 </script>
