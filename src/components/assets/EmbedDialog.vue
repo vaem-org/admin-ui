@@ -54,7 +54,7 @@
           await this.$axios.post(`/assets/${this.item._id}`, {
             public: true
           });
-        } else {
+        } else if (!this.item.public) {
           return false;
         }
       }
