@@ -1,14 +1,14 @@
 <template>
   <v-container>
     <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'preview')">Preview</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'player')">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="openDialog(items[0], 'editItem')">Edit</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'share')">Share</v-btn>
       <v-btn v-if="showEmbedButton" text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'embed')">Embed</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
-          <v-list-item @click="openDialog(item, 'preview')" v-if="item.state === 'processed'">
+          <v-list-item @click="openDialog(item, 'player')" v-if="item.state === 'processed'">
             <v-list-item-title>Preview</v-list-item-title>
           </v-list-item>
           <v-list-item @click="openDialog(item, 'editItem')">
