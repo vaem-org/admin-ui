@@ -30,6 +30,7 @@
   import get from 'lodash/get';
   import set from 'lodash/set';
   import each from 'lodash/each';
+  import Dialog from '@/mixins/Dialog';
 
   const channels = {
     'stereo': ['Stereo left', 'Stereo right'],
@@ -37,13 +38,12 @@
   };
 
   export default {
+    extends: Dialog,
     name: 'StreamsDialog',
     props: {
-      value: Boolean,
       item: Object
     },
     data: () => ({
-      dialog: false,
       streams: {
         streams: []
       },
@@ -70,22 +70,11 @@
       }))
     }),
 
-    watch: {
-      async value(val) {
-        if (val) {
-          this.streams = (await this.$axios.get(`/uploads/${this.item._id}/streams`)).data;
-          this.dialog = true;
-        } else {
-          this.dialog = false;
-        }
+    methods: {
+      async initDialog() {
+        this.streams = (await this.$axios.get(`/uploads/${this.item._id}/streams`)).data;
       },
 
-      dialog(value) {
-        this.$emit('input', value);
-      }
-    },
-
-    methods: {
       getChannel(item) {
         let result = null;
 
@@ -151,9 +140,6 @@
             return [];
         }
       }
-    },
-    mounted() {
-      this.$emit('input', this.dialog);
     }
   }
 </script>

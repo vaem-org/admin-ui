@@ -21,27 +21,20 @@
 </template>
 
 <script>
+  import Dialog from '@/mixins/Dialog';
+
   export default {
+    extends: Dialog,
+
     name: 'AddToQueueDialog',
     props: {
-      item: Object,
-      value: Boolean
+      item: Object
     },
     data: () => ({
-      dialog: false,
       skip: '',
       videoFilter: '',
       audio: ''
     }),
-    watch: {
-      value(val) {
-        this.dialog = val;
-      },
-
-      dialog(val) {
-        this.$emit('input', val);
-      }
-    },
     methods: {
       async addToQueue() {
         await this.$axios.post('/encoders/start-job', {
@@ -52,9 +45,6 @@
         });
         this.dialog = false;
       }
-    },
-    mounted() {
-      this.$emit('input', this.dialog);
     }
   }
 </script>

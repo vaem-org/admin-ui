@@ -32,15 +32,15 @@
 
 <script>
   import { languages } from '@/defaults';
+  import Dialog from '@/mixins/Dialog';
 
   export default {
+    extends: Dialog,
     name: 'AssignToAssetDialog',
     props: {
-      item: Object,
-      value: Boolean
+      item: Object
     },
     data: () => ({
-      dialog: false,
       asset: null,
       assets: [],
 
@@ -50,20 +50,6 @@
       loading: false,
       valid: false
     }),
-    watch: {
-      async value(val) {
-        if (val) {
-          this.assets = (await this.$axios.get('/uploads/assets')).data;
-          this.dialog = true;
-        } else {
-          this.dialog = false;
-        }
-      },
-
-      dialog(value) {
-        this.$emit('input', value);
-      }
-    },
     methods: {
       async assignToAsset() {
         if (!this.$refs.form.validate()) {
@@ -79,10 +65,11 @@
           console.error(e);
           this.loading = false;
         }
+      },
+
+      async initDialog() {
+        this.assets = (await this.$axios.get('/uploads/assets')).data;
       }
-    },
-    mounted() {
-      this.$emit('input', this.dialog);
     }
   }
 </script>

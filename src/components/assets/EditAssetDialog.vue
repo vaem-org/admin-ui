@@ -21,32 +21,18 @@
 </template>
 
 <script>
+  import Dialog from '@/mixins/Dialog';
   import pick from 'lodash/pick';
 
   export default {
+    extends: Dialog,
     name: 'EditAssetDialog',
     props: {
-      value: Boolean,
       item: Object
     },
     data: () => ({
-      dialog: false,
       labels: []
     }),
-    watch: {
-      async value(val) {
-        if (val) {
-          this.labels = (await this.$axios.get('/assets/labels')).data;
-          this.dialog = true;
-        } else {
-          this.dialog = false;
-        }
-      },
-
-      dialog(value) {
-        this.$emit('input', value);
-      }
-    },
     methods: {
       async saveItem() {
         await this.$axios.post(`/assets/${this.item._id}`, pick(this.item, [
@@ -56,10 +42,11 @@
         ]));
         this.dialog = false;
         this.$emit('saved');
+      },
+
+      async initDialog() {
+        this.labels = (await this.$axios.get('/assets/labels')).data;
       }
-    },
-    mounted() {
-      this.$emit('input', this.dialog);
     }
   }
 </script>

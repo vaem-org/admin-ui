@@ -5,6 +5,7 @@
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1" @click="open(items[0])">Edit</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openShareDialog(items[0])">Share</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openEmbedDialog(items[0])">Embed</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
           <v-list-item @click="preview(item)" v-if="item.state === 'processed'">
@@ -76,6 +77,7 @@
       </v-card>
     </v-dialog>
     <share-dialog v-model="shareDialog" :item="shareItem"/>
+    <embed-dialog v-model="embedDialog" :item="embedItem"/>
   </v-container>
 </template>
 
@@ -89,10 +91,11 @@
   import VaemPlayer from '@/components/VaemPlayer';
   import ShareDialog from '@/components/assets/ShareDialog';
   import EditAssetDialog from '@/components/assets/EditAssetDialog';
+  import EmbedDialog from '@/components/assets/EmbedDialog';
 
   export default {
     name: 'Assets',
-    components: { EditAssetDialog, ShareDialog, VaemPlayer, ItemList },
+    components: { EmbedDialog, EditAssetDialog, ShareDialog, VaemPlayer, ItemList },
     data() {
       return {
         items: [],
@@ -114,6 +117,10 @@
 
         shareItem: {},
         shareDialog: false,
+
+        embedItem: {},
+        embedDialog: false,
+
         loading: false
       };
     },
@@ -190,6 +197,11 @@
           setClipboard(`${process.env.VUE_APP_API_URL}/streams/-/-/${item._id}.m3u8`);
           events.emit('toast', 'URL copied successfully');
         }
+      },
+
+      openEmbedDialog(item) {
+        this.embedItem = item;
+        this.embedDialog = true;
       }
     },
 

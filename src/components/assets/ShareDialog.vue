@@ -35,32 +35,19 @@
 
 <script>
   import setClipboard from '@/util/set-clipboard';
+  import Dialog from '@/mixins/Dialog';
 
   export default {
+    extends: Dialog,
     name: "ShareDialog",
     props: {
-      value: Boolean,
       item: Object
     },
     data: () => ({
-      dialog: false,
       shareUrl: '',
       password: '',
       weeksValid: 2
     }),
-    watch: {
-      async value(val) {
-        this.dialog = val;
-        this.shareUrl = '';
-      },
-
-      dialog(value) {
-        this.$emit('input', value);
-        if (value) {
-          this.$nextTick(() => this.$refs.sharePassword.focus());
-        }
-      }
-    },
     methods: {
       async share() {
         const url = (await this.$axios.post(`/assets/${this.item._id}/share-url`, {
@@ -76,9 +63,11 @@
       copyShareUrl() {
         setClipboard(this.shareUrl);
       },
-    },
-    mounted() {
-      this.$emit('input', this.dialog);
+
+      async initDialog() {
+        await this.$nextTick();
+        this.$refs.sharePassword.focus();
+      }
     }
   }
 </script>
