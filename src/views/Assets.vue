@@ -81,7 +81,7 @@
 <script>
   import clone from 'lodash/clone';
   import { basename } from 'path';
-  import socketio from 'socket.io-client';
+  import { socketio } from '@/util/socketio';
   import ItemList from '@/components/ItemList';
   import setClipboard from '@/util/set-clipboard';
   import VaemPlayer from '@/components/VaemPlayer';
@@ -165,7 +165,7 @@
     },
 
     mounted() {
-      this.io = socketio(`${config.apiUrl}/global`);
+      this.io = socketio('/global');
 
       this.io.on('job-completed', (item) => {
         this.$refs.items.update({

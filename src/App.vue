@@ -48,9 +48,8 @@
 </template>
 
 <script>
-  import config from '@/config';
-  import io from 'socket.io-client';
   import events from '@/events';
+  import { socketio } from '@/util/socketio';
 
   export default {
     name: 'App',
@@ -62,7 +61,7 @@
     }),
 
     mounted() {
-      this.io = io(`${config.apiUrl}/global`);
+      this.io = socketio('/global');
 
       this.io.on('info', text => {
         this.snackbarText = text;

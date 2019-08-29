@@ -56,9 +56,9 @@
   import keyBy from 'lodash/keyBy';
   import pick from 'lodash/pick';
   import clone from 'lodash/clone';
-  import io from 'socket.io-client';
   import AddToQueueDialog from '@/components/uploads/AddToQueueDialog';
   import config from '@/config';
+  import { socketio } from '@/util/socketio';
 
   export default {
     name: 'Uploads',
@@ -127,7 +127,7 @@
     },
 
     mounted() {
-      this.io = io(`${config.apiUrl}/uploads`);
+      this.io = socketio(`${config.apiUrl}/uploads`);
       this.io.on('progress', data => {
         this.$refs.items.update({item: data});
       });

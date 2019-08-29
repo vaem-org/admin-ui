@@ -2,11 +2,19 @@
   <v-dialog v-model="dialog" max-width="500px">
     <v-card>
       <v-card-title>Embed asset</v-card-title>
-      <v-card-text class="text-right">
-        <v-textarea v-model="embedCode" label="HTML" filled readonly/>
-        <v-btn small icon @click="copyCode">
-          <v-icon>mdi-content-copy</v-icon>
-        </v-btn>
+      <v-card-text>
+        <div class="flex">
+          <v-text-field v-model="embedUrl" label="URL" readonly filled/>
+          <v-btn small icon @click="copyUrl" class="ma-2">
+            <v-icon>mdi-content-copy</v-icon>
+          </v-btn>
+        </div>
+        <div class="flex">
+          <v-textarea v-model="embedCode" label="HTML" filled readonly/>
+          <v-btn small icon @click="copyCode" class="ma-2">
+            <v-icon>mdi-content-copy</v-icon>
+          </v-btn>
+        </div>
       </v-card-text>
 
       <v-card-actions>
@@ -31,10 +39,13 @@
       item: Object
     },
     computed: {
+      embedUrl() {
+        return `${config.embedUrl}/${this.item._id}`;
+      },
       embedCode() {
         const height = get(this.item, 'videoParameters.height', 0);
         const width = get(this.item, 'videoParameters.width', 0);
-        const iframe = `<iframe src="${config.embedUrl}/${this.item._id}" frameborder="0"></iframe>`;
+        const iframe = `<iframe src="${this.embedUrl}" frameborder="0"></iframe>`;
         if (height !== 0) {
           const paddingTop = Math.round(height / width * 100) + '%';
           return `<div style="padding-top: ${paddingTop}">${iframe}</div>`
@@ -46,6 +57,11 @@
       copyCode() {
         setClipboard(this.embedCode);
         events.emit('toast', 'Embed code copied successfully');
+      },
+
+      copyUrl() {
+        setClipboard(this.embedUrl);
+        events.emit('toast', 'URL copied successfully');
       },
 
       async initDialog() {
@@ -63,6 +79,12 @@
   }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+  .flex {
+    display: flex;
 
+    > :first-child {
+      flex-grow: 1;
+    }
+  }
 </style>

@@ -58,10 +58,10 @@
 </template>
 
 <script>
-  import io from 'socket.io-client';
   import camelCase from 'lodash/camelCase';
   import get from 'lodash/get';
   import config from '@/config';
+  import { socketio } from '@/util/socketio';
 
   export default {
     name: 'Encoders',
@@ -137,7 +137,7 @@
       this.encoders = (await this.$axios.get('/encoders')).data;
       this.queue = (await this.$axios.get('/encoders/queue')).data;
 
-      this.io = io(`${config.apiUrl}/encoders-io`);
+      this.io = socketio('/encoders-io');
 
       const socket = this.io;
 
