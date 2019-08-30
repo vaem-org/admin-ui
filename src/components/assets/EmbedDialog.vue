@@ -45,10 +45,10 @@
       embedCode() {
         const height = get(this.item, 'videoParameters.height', 0);
         const width = get(this.item, 'videoParameters.width', 0);
-        const iframe = `<iframe src="${this.embedUrl}" frameborder="0"></iframe>`;
+        const iframe = `<iframe src="${this.embedUrl}" frameborder="0"${height !== 0 ? ' style="position:absolute;top:0;left:0;width:100%;height:100%"' : ''}></iframe>`;
         if (height !== 0) {
-          const paddingTop = Math.round(height / width * 100) + '%';
-          return `<div style="padding-top: ${paddingTop}">${iframe}</div>`
+          const paddingTop = (height / width * 100) + '%';
+          return `<div style="padding-top:${paddingTop};position:relative">${iframe}</div>`
         }
         return iframe;
       }
