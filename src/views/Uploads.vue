@@ -127,7 +127,7 @@
     },
 
     mounted() {
-      this.io = socketio(`${config.apiUrl}/uploads`);
+      this.io = socketio('/uploads');
       this.io.on('progress', data => {
         this.$refs.items.update({item: data});
       });
