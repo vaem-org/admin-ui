@@ -61,10 +61,9 @@
     }),
 
     async mounted() {
-      if (this.$route.name !== 'login') {
+      if (this.$route.meta.authenticated) {
         try {
-          const me = (await this.$axios.get('/login/me')).data;
-          console.log(me);
+          await this.$axios.get('/login/me');
         }
         catch (e) {
           sessionStorage.removeItem('token');

@@ -46,6 +46,7 @@
     watch: {
       dialog(val) {
         if (val) {
+          this.shareUrl = '';
           this.$nextTick(() => this.$refs.sharePassword.focus());
         }
       }
@@ -60,11 +61,18 @@
         const url = (await this.$axios.post(`/assets/${this.item._id}/share-url`, {
           password: this.password,
           weeksValid: this.weeksValid
-        })).data;
+        })).data.split('/');
 
         this.password = '';
 
-        this.shareUrl = `${location.origin}/player/${this.item._id}${url}`;
+        this.shareUrl = `${location.origin}${this.$router.resolve({
+          name: 'player',
+          params: {
+            assetId: this.item._id,
+            timestamp: url[1],
+            signature: url[2]
+          }
+        }).href}`;
       },
 
       copyShareUrl() {

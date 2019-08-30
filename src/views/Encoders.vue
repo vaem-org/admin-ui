@@ -60,7 +60,6 @@
 <script>
   import camelCase from 'lodash/camelCase';
   import get from 'lodash/get';
-  import config from '@/config';
   import { socketio } from '@/util/socketio';
 
   export default {

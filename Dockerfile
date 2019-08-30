@@ -10,4 +10,6 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 
 COPY docker/entrypoint.sh /entrypoint.sh
 
+ENV WEBPACK_BASE_URL "."
+
 CMD ["/entrypoint.sh"]

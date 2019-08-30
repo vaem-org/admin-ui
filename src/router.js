@@ -24,17 +24,26 @@ const router = new Router({
     {
       path: '/assets',
       name: 'assets',
-      component: Assets
+      component: Assets,
+      meta: {
+        authenticated: true
+      }
     },
     {
       path: '/uploads',
       name: 'uploads',
-      component: Uploads
+      component: Uploads,
+      meta: {
+        authenticated: true
+      }
     },
     {
       path: '/encoders',
       name: 'encoders',
-      component: Encoders
+      component: Encoders,
+      meta: {
+        authenticated: true
+      }
     },
     {
       path: '/player/:assetId/:timestamp/:signature',
@@ -48,7 +57,7 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.name !== 'login' && !sessionStorage.getItem('token')) {
+  if (to.meta.authenticated && !sessionStorage.getItem('token')) {
     next({name: 'login'})
   } else {
     next();
