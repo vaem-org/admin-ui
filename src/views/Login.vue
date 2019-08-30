@@ -20,8 +20,8 @@ export default {
   }),
   methods: {
     login({token, refreshToken}) {
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('loginProvider', this.provider);
+      localStorage.setItem('token', token);
+      localStorage.setItem('loginProvider', this.provider);
       localStorage.setItem('refreshToken', refreshToken);
       this.$router.push({name: 'assets'});
     },
@@ -59,7 +59,7 @@ export default {
     }
   },
   async mounted() {
-    if (sessionStorage.getItem('token')) {
+    if (localStorage.getItem('token')) {
       return this.$router.push({name: 'assets'});
     }
 

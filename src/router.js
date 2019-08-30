@@ -57,7 +57,7 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.authenticated && !sessionStorage.getItem('token')) {
+  if (to.meta.authenticated && !localStorage.getItem('token')) {
     next({name: 'login'})
   } else {
     next();

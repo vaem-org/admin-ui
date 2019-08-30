@@ -66,7 +66,7 @@
           await this.$axios.get('/login/me');
         }
         catch (e) {
-          sessionStorage.removeItem('token');
+          localStorage.removeItem('token');
           await this.$router.push({ name: 'login' });
         }
       }

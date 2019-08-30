@@ -57,7 +57,6 @@
   import pick from 'lodash/pick';
   import clone from 'lodash/clone';
   import AddToQueueDialog from '@/components/uploads/AddToQueueDialog';
-  import config from '@/config';
   import { socketio } from '@/util/socketio';
 
   export default {
