@@ -20,7 +20,7 @@ const _axios = axios.create(axiosConfig);
 _axios.interceptors.request.use(
   function(config) {
     // Do something before request is sent
-    config.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
+    config.headers['Authorization'] = `Bearer ${sessionStorage.getItem('token')}`;
     return config;
   },
   function(error) {
@@ -35,9 +35,19 @@ _axios.interceptors.response.use(
     // Do something with response data
     return response;
   },
-  function(error) {
+  async function(error) {
     // Do something with response error
-    return Promise.reject(error);
+    if (!error.response || error.response.status !== 401 || error.response.data.message !== 'TokenExpiredError') {
+      throw error;
+    }
+
+    const { data } = await _axios.post(`/login/${sessionStorage.getItem('loginProvider')}/refresh`, {
+      token: localStorage.getItem('refreshToken')
+    });
+
+    sessionStorage.setItem('token', data.token);
+    error.config.headers['Authorization'] = `Bearer ${data.token}`;
+    return _axios.request(error.config);
   }
 );
 

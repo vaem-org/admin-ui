@@ -60,7 +60,18 @@
       snackbarText: ''
     }),
 
-    mounted() {
+    async mounted() {
+      if (this.$route.name !== 'login') {
+        try {
+          const me = (await this.$axios.get('/login/me')).data;
+          console.log(me);
+        }
+        catch (e) {
+          sessionStorage.removeItem('token');
+          await this.$router.push({ name: 'login' });
+        }
+      }
+
       this.io = socketio('/global');
 
       this.io.on('info', text => {

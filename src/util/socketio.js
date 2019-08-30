@@ -6,6 +6,6 @@ const url = new URL(config.apiUrl);
 
 export function socketio(namespace) {
   return io(url.origin + namespace, {
-    path: url.pathname + '/socket.io'
+    path: url.pathname + (url.pathname.endsWith('/') ? '' : '/')+ 'socket.io'
   });
 }

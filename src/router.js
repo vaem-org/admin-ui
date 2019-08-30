@@ -16,7 +16,10 @@ const router = new Router({
     {
       path: '/',
       name: 'login',
-      component: Login
+      component: Login,
+      meta: {
+        emptyLayout: true
+      }
     },
     {
       path: '/assets',
@@ -45,7 +48,7 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.name !== 'login' && !localStorage.getItem('token')) {
+  if (to.name !== 'login' && !sessionStorage.getItem('token')) {
     next({name: 'login'})
   } else {
     next();
