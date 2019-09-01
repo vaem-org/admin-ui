@@ -31,6 +31,9 @@
           </v-list-item>
         </v-list>
       </template>
+      <template v-slot:item.public="{ item }">
+        {{ item.public ? 'Yes' : 'No' }}
+      </template>
       <template v-slot:item.progress="{ item }">
         {{ (item.bitrates || []).length }} / {{ (item.jobs || []).length }}
       </template>
@@ -85,6 +88,7 @@
         items: [],
         headers: [
           { text: 'Title', value: 'title' },
+          { text: 'Public', value: 'public' },
           { text: 'Labels', value: 'labels' },
           { text: 'State', value: 'state' },
           { text: 'Progress', value: 'progress' },

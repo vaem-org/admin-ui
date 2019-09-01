@@ -109,7 +109,7 @@
 
         let error = false;
         // upload subtitles
-        for(let language of Object.keys(this.editItem.subtitles)) {
+        for(let language of Object.keys(this.editItem.subtitles || {})) {
           if (typeof this.editItem.subtitles[language] !== 'boolean') {
             const file = this.editItem.subtitles[language];
             try {
