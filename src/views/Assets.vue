@@ -20,17 +20,6 @@
           <v-list-item @click="addMissingBitrates(item)">
             <v-list-item-title>Add missing bitrates</v-list-item-title>
           </v-list-item>
-          <div v-if="item.state === 'processed'">
-          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`upload-${lang}`">
-            <v-list-item-title class="file">
-              <input type="file" @change="uploadSubtitles(item, lang, $event)">
-              Upload subtitles ({{ lang }})
-            </v-list-item-title>
-          </v-list-item>
-          </div>
-          <v-list-item v-for="lang of ['nl','en','fr','de']" :key="`download-${lang}`" v-show="item && item.subtitles && item.subtitles[lang]" :href="downloadSubtitleUrl(item, lang)">
-            <v-list-item-title>Download subtitles ({{ lang }})</v-list-item-title>
-          </v-list-item>
           <v-list-item @click="openDialog(item, 'info')">
             <v-list-item-title>Show info</v-list-item-title>
           </v-list-item>
@@ -79,7 +68,7 @@
 </template>
 
 <script>
-  import clone from 'lodash/clone';
+  import cloneDeep from 'lodash/cloneDeep';
   import { basename } from 'path';
   import { socketio } from '@/util/socketio';
   import ItemList from '@/components/ItemList';
@@ -119,18 +108,8 @@
     methods: {
       async open(item) {
         this.labels = (await this.$axios.get('/assets/labels')).data;
-        this.item = clone(item);
+        this.item = cloneDeep(item);
         this.editItemDialog = true;
-      },
-
-      downloadSubtitleUrl(item, subtitleLanguage) {
-        if (!item) {
-          return '';
-        }
-
-        const base = `${config.apiUrl}/assets/${item._id}/`;
-        const query = `?token=${encodeURIComponent(localStorage.getItem('token'))}`;
-        return `${base}subtitles/${subtitleLanguage}${query}`;
       },
 
       copyId(item) {
@@ -138,20 +117,12 @@
       },
 
       openDialog(item, prop) {
-        this.item = clone(item);
+        this.item = cloneDeep(item);
         this[`${prop}Dialog`] = true;
       },
 
       async addMissingBitrates(item) {
         await this.$axios.post('/encoders/start-job', {assetId: item._id});
-      },
-
-      async uploadSubtitles(item, language, {target}) {
-        this.loading = true;
-        await this.axios.put(`/assets/${item._id}/subtitles/${language}/${basename(target.files[0].name)}`, target.files[0]);
-        target.value = '';
-        this.$refs.items.update();
-        this.loading = false;
       },
 
       async remove(item) {
