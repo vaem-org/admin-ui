@@ -18,8 +18,8 @@
       <div v-if="shareUrl">
         <v-card-text>
           <div class="flex">
-            <pre class="ellipsis">{{ shareUrl }}</pre>
-            <v-btn small icon @click="copyShareUrl">
+            <v-text-field label="URL" readonly v-model="shareUrl" filled/>
+            <v-btn small icon @click="copyShareUrl" class="ma-2">
               <v-icon>mdi-content-copy</v-icon>
             </v-btn>
           </div>
@@ -36,6 +36,7 @@
 <script>
   import setClipboard from '@/util/set-clipboard';
   import Dialog from '@/mixins/Dialog';
+  import events from '@/events';
 
   export default {
     extends: Dialog,
@@ -77,6 +78,7 @@
 
       copyShareUrl() {
         setClipboard(this.shareUrl);
+        events.emit('toast', 'URL copied successfully');
       }
     }
   }
