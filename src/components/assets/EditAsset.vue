@@ -1,19 +1,19 @@
 <template>
-  <v-dialog v-model="dialog" max-width="800px" :persistent="uploading">
-    <v-card>
+  <div>
+    <v-card flat>
       <v-form @submit.prevent="saveItem">
         <v-card-title>
-          <span>Edit asset</span>
+          <span>{{ item.title }}</span>
         </v-card-title>
         <v-card-text>
-          <v-switch label="Public" v-model="item.public"/>
-          <v-text-field label="Title" v-model="item.title"/>
-          <v-combobox label="Labels" v-model="item.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off"/>
+          <v-switch label="Public" v-model="editItem.public"/>
+          <v-text-field label="Title" v-model="editItem.title"/>
+          <v-combobox label="Labels" v-model="editItem.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off"/>
           <div>
             <h3>
               Subtitles
               <v-btn icon small @click="uploadSubtitlePopup=true" color="primary"
-                     :disabled="availableLanguages.length === 0 || item.state !== 'processed'">
+                     :disabled="availableLanguages.length === 0 || editItem.state !== 'processed'">
                   <v-icon>mdi-plus</v-icon>
               </v-btn>
             </h3>
@@ -28,8 +28,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
-          <v-btn @click="dialog=false" :disabled="uploading">Cancel</v-btn>
-          <v-btn type="submit" color="primary" :loading="uploading">Save</v-btn>
+          <v-btn @click="cancel" :disabled="uploading || !changed">Cancel</v-btn>
+          <v-btn type="submit" color="primary" :loading="uploading" :disabled="!changed">Save</v-btn>
         </v-card-actions>
       </v-form>
     </v-card>
@@ -50,46 +50,49 @@
       </v-form>
 
     </v-dialog>
-  </v-dialog>
+  </div>
 </template>
 
 <script>
-  import Dialog from '@/mixins/Dialog';
   import pick from 'lodash/pick';
+  import cloneDeep from 'lodash/cloneDeep';
+  import isEqual from 'lodash/isEqual';
   import { basename } from 'path';
   import config from '@/config';
   import { languages } from '@/defaults';
 
   export default {
-    extends: Dialog,
-    name: 'EditAssetDialog',
+    name: 'EditAsset',
     props: {
-      item: Object
+      item: Object,
+      labels: Array
     },
     data: () => ({
-      labels: [],
       uploadFile: null,
       uploading: false,
       uploadLanguage: null,
       uploadSubtitlePopup: false,
       languages,
-      initialSubtitles: {},
       error: false,
-      errorMessage: ''
+      errorMessage: '',
+      editItem: {}
     }),
     computed: {
       subtitles() {
-        return Object.keys(this.item.subtitles || {});
+        return Object.keys(this.editItem.subtitles || {});
       },
       availableLanguages() {
         return languages.filter(
-          language => !this.item.subtitles || !this.item.subtitles[language]
+          language => !this.editItem.subtitles || !this.editItem.subtitles[language]
         );
+      },
+      changed() {
+        return !isEqual(this.item, this.editItem);
       }
     },
     watch: {
-      item({subtitles}) {
-        this.initialSubtitles = subtitles;
+      item(item) {
+        this.editItem = cloneDeep(item);
       }
     },
     methods: {
@@ -98,17 +101,17 @@
         this.error = false;
 
         // remove deleted subtitles
-        for(let language of Object.keys(this.initialSubtitles)) {
-          if (this.initialSubtitles[language] && !this.item.subtitles[language]) {
+        for(let language of Object.keys(this.item.subtitles || {})) {
+          if (this.item.subtitles[language] && !this.editItem.subtitles[language]) {
             await this.$axios.delete(`/assets/${this.item._id}/subtitles/${language}`);
           }
         }
 
         let error = false;
         // upload subtitles
-        for(let language of Object.keys(this.item.subtitles)) {
-          if (typeof this.item.subtitles[language] !== 'boolean') {
-            const file = this.item.subtitles[language];
+        for(let language of Object.keys(this.editItem.subtitles)) {
+          if (typeof this.editItem.subtitles[language] !== 'boolean') {
+            const file = this.editItem.subtitles[language];
             try {
               await this.axios.put(`/assets/${this.item._id}/subtitles/${language}/${basename(file.name)}`,
                 file);
@@ -127,19 +130,18 @@
           return;
         }
 
-        await this.$axios.post(`/assets/${this.item._id}`, pick(this.item, [
+        await this.$axios.post(`/assets/${this.item._id}`, pick(this.editItem, [
           'title',
           'labels',
           'public'
         ]));
 
-        this.dialog = false;
         this.$emit('saved');
         this.uploading = false;
       },
 
-      async initDialog() {
-        this.labels = (await this.$axios.get('/assets/labels')).data;
+      cancel() {
+        this.editItem = cloneDeep(this.item);
       },
 
       downloadSubtitleUrl(language) {
@@ -149,10 +151,10 @@
       },
 
       removeSubtitle(language) {
-        const subtitles = {...this.item.subtitles};
+        const subtitles = {...this.editItem.subtitles};
         delete subtitles[language];
 
-        this.$set(this.item, 'subtitles', subtitles);
+        this.$set(this.editItem, 'subtitles', subtitles);
       },
 
       addSubtitle() {
@@ -160,8 +162,8 @@
           return;
         }
 
-        this.$set(this.item, 'subtitles', {
-          ...this.item.subtitles,
+        this.$set(this.editItem, 'subtitles', {
+          ...this.editItem.subtitles,
           [this.uploadLanguage]: this.uploadFile
         });
 

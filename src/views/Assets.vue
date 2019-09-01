@@ -1,18 +1,18 @@
 <template>
   <v-container>
+    <v-navigation-drawer app right width="400">
+      <edit-asset v-if="items.length===1" :item="item" @saved="update()" :labels="labels"/>
+    </v-navigation-drawer>
+
     <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'player')">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1" @click="openDialog(items[0], 'editItem')">Edit</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'share')">Share</v-btn>
       <v-btn v-if="showEmbedButton" text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'embed')">Embed</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
           <v-list-item @click="openDialog(item, 'player')" v-if="item.state === 'processed'">
             <v-list-item-title>Preview</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="openDialog(item, 'editItem')">
-            <v-list-item-title>Edit</v-list-item-title>
           </v-list-item>
           <v-list-item @click="openDialog(item, 'share')" v-if="item.state === 'processed'">
             <v-list-item-title>Share</v-list-item-title>
@@ -47,7 +47,6 @@
         {{ item.videoParameters.duration | duration }}
       </template>
     </item-list>
-    <edit-asset-dialog v-model="editItemDialog" :item="item" @saved="$refs.items.update()"/>
     <v-dialog v-model="infoDialog" max-width="80%">
       <v-card>
         <v-card-text>
@@ -69,19 +68,18 @@
 
 <script>
   import cloneDeep from 'lodash/cloneDeep';
-  import { basename } from 'path';
   import { socketio } from '@/util/socketio';
   import ItemList from '@/components/ItemList';
   import setClipboard from '@/util/set-clipboard';
   import VaemPlayer from '@/components/VaemPlayer';
   import ShareDialog from '@/components/assets/ShareDialog';
-  import EditAssetDialog from '@/components/assets/EditAssetDialog';
+  import EditAsset from '@/components/assets/EditAsset';
   import EmbedDialog from '@/components/assets/EmbedDialog';
   import config from '@/config';
 
   export default {
     name: 'Assets',
-    components: { EmbedDialog, EditAssetDialog, ShareDialog, VaemPlayer, ItemList },
+    components: { EmbedDialog, EditAsset, ShareDialog, VaemPlayer, ItemList },
     data() {
       return {
         items: [],
@@ -102,8 +100,14 @@
         embedDialog: false,
 
         loading: false,
-        showEmbedButton: !!config.embedUrl
+        showEmbedButton: !!config.embedUrl,
+        labels: []
       };
+    },
+    watch: {
+      items(value) {
+        this.item = value.length === 1 ? cloneDeep(value[0]) : {};
+      }
     },
     methods: {
       async open(item) {
@@ -127,15 +131,20 @@
 
       async remove(item) {
         await this.$axios.delete(`/assets/${item._id}`);
-        this.$refs.items.update({force: true});
+        return this.update();
       },
 
       async download(item) {
         location.href = config.apiUrl + (await this.$axios.get(`/assets/${item._id}/download`)).data;
+      },
+
+      async update() {
+        this.$refs.items.update({force: true});
+        this.labels = (await this.$axios.get('/assets/labels')).data;
       }
     },
 
-    mounted() {
+    async mounted() {
       this.io = socketio('/global');
 
       this.io.on('job-completed', (item) => {
@@ -147,6 +156,8 @@
       this.io.on('asset-added', () => {
         this.$refs.items.update();
       })
+
+      this.labels = (await this.$axios.get('/assets/labels')).data;
     },
 
     destroyed() {
