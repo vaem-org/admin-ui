@@ -71,6 +71,7 @@
           await this.$axios.post(`/assets/${this.item._id}`, {
             public: true
           });
+          this.$emit('saved');
         } else if (!this.item.public) {
           return false;
         }

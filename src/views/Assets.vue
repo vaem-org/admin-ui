@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-navigation-drawer app right width="400">
-      <edit-asset v-if="items.length===1" :item="item" @saved="update()" :labels="labels"/>
+      <edit-asset v-if="items.length===1" :item="item" @saved="update" :labels="labels"/>
     </v-navigation-drawer>
 
     <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
@@ -65,7 +65,7 @@
       </v-card>
     </v-dialog>
     <share-dialog v-model="shareDialog" :item="item"/>
-    <embed-dialog v-model="embedDialog" :item="item"/>
+    <embed-dialog v-model="embedDialog" :item="item" @saved="update"/>
   </v-container>
 </template>
 
