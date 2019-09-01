@@ -39,7 +39,7 @@
           <v-card-title>Add subtitle</v-card-title>
           <v-card-text>
             <v-select v-model="uploadLanguage" label="Language" :items="availableLanguages" :rules="[v => !!v || 'Please select a language']"/>
-            <v-file-input v-model="uploadFile" label="File" :rules="[v => !!v || 'Please select a file']" accept="'.890,.stl,.pac,.srt,.vtt"/>
+            <v-file-input v-model="uploadFile" label="File" :rules="[v => !!v || 'Please select a file']" accept=".890,.stl,.pac,.srt,.vtt"/>
           </v-card-text>
           <v-card-actions>
             <v-spacer/>
