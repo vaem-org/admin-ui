@@ -82,10 +82,10 @@
   export default {
     name: 'EditAsset',
     props: {
-      item: Object,
       labels: Array
     },
     data: () => ({
+      item: {},
       uploadFile: null,
       uploading: false,
       uploadLanguage: null,
@@ -109,8 +109,13 @@
       }
     },
     watch: {
-      item(item) {
-        this.editItem = cloneDeep(item);
+      async $route(to) {
+        if (to.params.id !== this.item.id) {
+          this.item = this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
+        }
+      },
+      item(val) {
+        this.editItem = cloneDeep(val);
       }
     },
     methods: {
@@ -156,6 +161,7 @@
 
         this.$emit('saved');
         this.uploading = false;
+        this.item = cloneDeep(this.editItem);
       },
 
       cancel() {
@@ -190,6 +196,9 @@
         this.$refs.addSubtitle.resetValidation();
         this.uploadSubtitlePopup = false;
       }
+    },
+    async mounted() {
+      this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
     }
   }
 </script>

@@ -19,7 +19,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './views/Login'
-import Assets from './views/Assets'
+import Assets from './views/assets/index'
+import EditAsset from './views/assets/_id';
 import Uploads from './views/Uploads';
 import Encoders from './views/Encoders';
 import Player from './views/Player';
@@ -45,7 +46,16 @@ const router = new Router({
       component: Assets,
       meta: {
         authenticated: true
-      }
+      },
+      children: [
+        {
+          path: ':id',
+          name: 'asset',
+          components: {
+            right: EditAsset
+          }
+        },
+      ]
     },
     {
       path: '/uploads',

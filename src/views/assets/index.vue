@@ -18,10 +18,6 @@
 
 <template>
   <v-container>
-    <v-navigation-drawer app right width="400">
-      <edit-asset v-if="items.length===1" :item="item" @saved="update" :labels="labels"/>
-    </v-navigation-drawer>
-
     <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'player')">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
@@ -84,6 +80,9 @@
     </v-dialog>
     <share-dialog v-model="shareDialog" :item="item"/>
     <embed-dialog v-model="embedDialog" :item="item" @saved="update"/>
+    <v-navigation-drawer right app width="400">
+      <router-view name="right" @saved="update"/>
+    </v-navigation-drawer>
   </v-container>
 </template>
 
@@ -94,16 +93,15 @@
   import setClipboard from '@/util/set-clipboard';
   import VaemPlayer from '@/components/VaemPlayer';
   import ShareDialog from '@/components/assets/ShareDialog';
-  import EditAsset from '@/components/assets/EditAsset';
   import EmbedDialog from '@/components/assets/EmbedDialog';
   import config from '@/config';
 
   export default {
     name: 'Assets',
-    components: { EmbedDialog, EditAsset, ShareDialog, VaemPlayer, ItemList },
+    components: { EmbedDialog, ShareDialog, VaemPlayer, ItemList },
     data() {
       return {
-        items: [],
+        items: this.$route.params.id ? [{_id:this.$route.params.id}] : [],
         headers: [
           { text: 'Title', value: 'title' },
           { text: 'Public', value: 'public' },
@@ -127,17 +125,27 @@
       };
     },
     watch: {
-      items(value) {
-        this.item = value.length === 1 ? cloneDeep(value[0]) : {};
+      async items(value) {
+        try {
+          if (value.length === 1) {
+            await this.$router.replace({
+              name: 'asset',
+              params: {
+                id: value[0]._id
+              }
+            })
+          } else {
+            await this.$router.replace({
+              name: 'assets'
+            })
+          }
+        }
+        catch (e) {
+          // ignore navigation errors
+        }
       }
     },
     methods: {
-      async open(item) {
-        this.labels = (await this.$axios.get('/assets/labels')).data;
-        this.item = cloneDeep(item);
-        this.editItemDialog = true;
-      },
-
       copyId(item) {
         setClipboard(item._id);
       },
@@ -177,7 +185,7 @@
 
       this.io.on('asset-added', () => {
         this.$refs.items.update();
-      })
+      });
 
       this.labels = (await this.$axios.get('/assets/labels')).data;
     },
