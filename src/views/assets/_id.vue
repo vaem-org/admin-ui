@@ -24,6 +24,7 @@
           <span>{{ item.title }}</span>
         </v-card-title>
         <v-card-text>
+          <v-img :src="thumbnail" :aspect-ratio="16/9"/>
           <v-switch label="Public" v-model="editItem.public"/>
           <v-text-field label="Title" v-model="editItem.title"/>
           <v-combobox label="Labels" v-model="editItem.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off"/>
@@ -36,7 +37,8 @@
               </v-btn>
             </h3>
             <div v-for="language of subtitles" :key="language">
-              <a :href="downloadSubtitleUrl(language)">{{ language.toUpperCase() }}</a>
+              <button v-if="editItem.subtitles[language] === true" type="button" class="link primary--text" @click="downloadSubtitle(language)">{{ language.toUpperCase() }}</button>
+              <span v-else>{{ language.toUpperCase() }}</span>
               <v-btn @click="removeSubtitle(language)" icon><v-icon>mdi-delete</v-icon></v-btn>
             </div>
           </div>
@@ -93,7 +95,8 @@
       languages,
       error: false,
       errorMessage: '',
-      editItem: {}
+      editItem: {},
+      thumbnails: {}
     }),
     computed: {
       subtitles() {
@@ -106,6 +109,13 @@
       },
       changed() {
         return !isEqual(this.item, this.editItem);
+      },
+      thumbnail() {
+        if (this.thumbnails.default) {
+          return config.apiUrl + this.thumbnails.default;
+        }
+
+        return '';
       }
     },
     watch: {
@@ -114,8 +124,11 @@
           this.item = this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
         }
       },
-      item(val) {
+      async item(val) {
         this.editItem = cloneDeep(val);
+
+        this.thumbnails = {};
+        this.thumbnails = (await this.$axios.get(`/assets/${this.$route.params.id}/thumbnails`)).data;
       }
     },
     methods: {
@@ -161,17 +174,16 @@
 
         this.$emit('saved');
         this.uploading = false;
-        this.item = cloneDeep(this.editItem);
+        this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
       },
 
       cancel() {
         this.editItem = cloneDeep(this.item);
       },
 
-      downloadSubtitleUrl(language) {
-        const base = `${config.apiUrl}/assets/${this.item._id}/`;
-        const query = `?token=${encodeURIComponent(localStorage.getItem('token'))}`;
-        return `${base}subtitles/${language}${query}`;
+      async downloadSubtitle(language) {
+        location.href = `${config.apiUrl}/assets/${this.item._id}/subtitles` +
+          (await this.$axios.get(`/assets/${this.item._id}/subtitles/${language}`)).data;
       },
 
       removeSubtitle(language) {
@@ -204,5 +216,8 @@
 </script>
 
 <style scoped>
-
+  button.link {
+    outline: none;
+    text-decoration: underline;
+  }
 </style>
