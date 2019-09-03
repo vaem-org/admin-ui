@@ -81,7 +81,7 @@
     <share-dialog v-model="shareDialog" :item="item"/>
     <embed-dialog v-model="embedDialog" :item="item" @saved="update"/>
     <v-navigation-drawer right app width="400">
-      <router-view name="right" @saved="update"/>
+      <router-view name="right" @saved="update" :timestamp="timestamp"/>
     </v-navigation-drawer>
   </v-container>
 </template>
@@ -121,7 +121,8 @@
 
         loading: false,
         showEmbedButton: !!config.embedUrl,
-        labels: []
+        labels: [],
+        timestamp: Date.now()
       };
     },
     watch: {
@@ -171,6 +172,7 @@
       async update() {
         this.$refs.items.update({force: true});
         this.labels = (await this.$axios.get('/assets/labels')).data;
+        this.timestamp = Date.now();
       }
     },
 

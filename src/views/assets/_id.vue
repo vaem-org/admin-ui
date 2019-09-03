@@ -24,7 +24,7 @@
           <span>{{ item.title }}</span>
         </v-card-title>
         <v-card-text>
-          <v-img :src="thumbnail" :aspect-ratio="16/9"/>
+          <v-img :src="thumbnail" :aspect-ratio="16/9" v-if="item.state === 'processed'"/>
           <v-switch label="Public" v-model="editItem.public"/>
           <v-text-field label="Title" v-model="editItem.title"/>
           <v-combobox label="Labels" v-model="editItem.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off"/>
@@ -84,7 +84,8 @@
   export default {
     name: 'EditAsset',
     props: {
-      labels: Array
+      labels: Array,
+      timestamp: Number
     },
     data: () => ({
       item: {},
@@ -121,7 +122,7 @@
     watch: {
       async $route(to) {
         if (to.params.id !== this.item.id) {
-          this.item = this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
+          await this.update();
         }
       },
       async item(val) {
@@ -129,6 +130,11 @@
 
         this.thumbnails = {};
         this.thumbnails = (await this.$axios.get(`/assets/${this.$route.params.id}/thumbnails`)).data;
+      },
+
+      timestamp() {
+        this.update()
+          .catch(e => console.error(e));
       }
     },
     methods: {
@@ -174,7 +180,7 @@
 
         this.$emit('saved');
         this.uploading = false;
-        this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
+        await this.update();
       },
 
       cancel() {
@@ -207,10 +213,15 @@
         this.uploadLanguage = null;
         this.$refs.addSubtitle.resetValidation();
         this.uploadSubtitlePopup = false;
+      },
+
+      async update() {
+        this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
       }
     },
     async mounted() {
-      this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
+      this.update()
+        .catch(e => console.error(e));
     }
   }
 </script>
