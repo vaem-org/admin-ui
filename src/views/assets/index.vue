@@ -49,7 +49,8 @@
         {{ item.public ? 'Yes' : 'No' }}
       </template>
       <template v-slot:item.progress="{ item }">
-        {{ (item.bitrates || []).length }} / {{ (item.jobs || []).length }}
+        <v-progress-linear :value="(item.bitrates || []).length / (item.jobs || []).length * 100"
+                           :color="item.state==='processed' ? 'success' : 'primary'"/>
       </template>
       <template v-slot:item.labels="{ item }">
         <v-chip v-for="label of item.labels" :key="label" class="my-1">{{ label }}</v-chip>
@@ -61,7 +62,7 @@
         {{ Object.keys(item.subtitles || {}).length > 0 ? 'Yes' : 'No' }}
       </template>
       <template v-slot:item.videoParameters.duration="{ item }">
-        {{ item.videoParameters.duration | duration }}
+        {{ (item.videoParameters || {}).duration | duration }}
       </template>
     </item-list>
     <v-dialog v-model="infoDialog" max-width="80%">
@@ -160,8 +161,8 @@
         await this.$axios.post('/encoders/start-job', {assetId: item._id});
       },
 
-      async remove(item) {
-        await this.$axios.delete(`/assets/${item._id}`);
+      async remove() {
+        await this.$axios.post('/assets/remove', this.items.map(item => item._id));
         return this.update();
       },
 

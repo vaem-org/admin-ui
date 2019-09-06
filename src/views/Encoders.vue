@@ -25,6 +25,7 @@
           Queue
         </v-btn>
       </v-badge>
+      <v-btn outlined color="primary" @click="copyDockerCommand">Copy docker command</v-btn>
 
       <v-data-table :headers="headers" hide-default-footer :items="items">
         <template v-slot:item.progress="{ item }">
@@ -79,6 +80,7 @@
   import camelCase from 'lodash/camelCase';
   import get from 'lodash/get';
   import { socketio } from '@/util/socketio';
+  import setClipboard from '@/util/set-clipboard';
 
   export default {
     name: 'Encoders',
@@ -147,8 +149,12 @@
       },
 
       async updatePriority(encoder) {
-        await this.$axios.post(`encoders/${encoder.id}/priority`, {priority: encoder.info.priority});
+        await this.$axios.post(`/encoders/${encoder.id}/priority`, {priority: encoder.info.priority});
       },
+
+      async copyDockerCommand() {
+        setClipboard((await this.$axios.get('/encoders/docker')).data);
+      }
     },
     async mounted() {
       this.encoders = (await this.$axios.get('/encoders')).data;

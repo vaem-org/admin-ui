@@ -118,7 +118,7 @@
       },
 
       setChannel(selected, item) {
-        switch (this.channels) {
+        switch (item.channels) {
           case 1:
             each(channels, (channelNames, key) => {
               const channelIndex = channelNames.indexOf(selected);

@@ -37,7 +37,7 @@
       must-sort
       v-model="selected"
       item-key="_id"
-      @click:row="selected=[$event]"
+      @click:row="clickRow"
       :loading="loading"
     >
       <template v-for="(_, name) in $scopedSlots" :slot="name" slot-scope="slotData">
@@ -146,7 +146,13 @@
         }
       }, 250, {
         leading: true
-      })
+      }),
+
+      clickRow(item) {
+        if (!this.selected.includes(item)) {
+          this.selected = [item];
+        }
+      }
     }
   }
 </script>
