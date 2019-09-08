@@ -23,8 +23,8 @@
         <input type="file" multiple @change="uploadFiles">
         Upload
       </v-btn>
-      <v-btn text tile color="primary" :disabled="items.length===0 || items.filter(item => item.type === 'video').length !== items.length" @click="addToQueue(items)">Add to queue</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='video'" @click="preview(items[0])">Preview</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length===0 || items.filter(item => item.type === 'video').length !== items.length" @click="addToQueue(items)">Add to queue</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='video'" @click="openDialog(items[0], 'streams')">Select audio streams</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='subtitle'" @click="openDialog(items[0], 'assignToAsset')">Assign to asset</v-btn>
       <template v-slot:contextMenu="{ item }">

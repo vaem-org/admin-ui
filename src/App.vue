@@ -55,7 +55,7 @@
       <v-btn icon small :to="{path:'/encoders/'}" text class="mr-2">
         <v-icon small>mdi-server-network</v-icon>
       </v-btn>
-      <span>Asset manager</span>
+      <span>VAEM - Asset manager</span>
       <v-spacer/>
       <span class="mr-2">&copy; {{ year }}</span>
     </v-footer>
