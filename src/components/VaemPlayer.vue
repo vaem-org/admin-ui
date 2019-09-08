@@ -33,7 +33,8 @@
     props: {
       assetId: String,
       fullscreen: {type: Boolean, default: false},
-      item: Object
+      item: Object,
+      url: String
     },
     computed: {
       playerClass() {
@@ -48,6 +49,12 @@
         if (this.player) {
           this.load();
         }
+      },
+
+      url() {
+        if (this.player) {
+          this.load();
+        }
       }
     },
 
@@ -59,12 +66,22 @@
             this.player.removeRemoteTextTrack(track);
           }
 
-          const item = this.item || (await this.axios.get(`/streams/${this.assetId}/item`)).data;
+          let item;
 
-          this.player.src({
-            type: 'application/x-mpegURL',
-            src: config.apiUrl + item.streamUrl
-          });
+          console.log(this.url);
+          if (this.url) {
+            this.player.src({
+              type: 'application/x-mpegURL',
+              src: config.apiUrl + this.url
+            })
+          } else {
+            item = this.item || (await this.axios.get(`/streams/${this.assetId}/item`)).data;
+
+            this.player.src({
+              type: 'application/x-mpegURL',
+              src: config.apiUrl + item.streamUrl
+            });
+          }
 
           const subtitles = (item || {}).subtitles;
           if (subtitles) {
@@ -81,7 +98,7 @@
       },
     mounted() {
       this.player = videojs(this.$refs['video'], null, () => {
-        if (this.assetId || this.item) {
+        if (this.assetId || this.item || this.url) {
           this.load();
         }
       });

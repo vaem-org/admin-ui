@@ -24,6 +24,7 @@
         Upload
       </v-btn>
       <v-btn text tile color="primary" :disabled="items.length===0 || items.filter(item => item.type === 'video').length !== items.length" @click="addToQueue(items)">Add to queue</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='video'" @click="preview(items[0])">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='video'" @click="openDialog(items[0], 'streams')">Select audio streams</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='subtitle'" @click="openDialog(items[0], 'assignToAsset')">Assign to asset</v-btn>
       <template v-slot:contextMenu="{ item }">
@@ -63,6 +64,13 @@
     <streams-dialog v-model="streamsDialog" :item="item"/>
     <assign-to-asset-dialog v-model="assignToAssetDialog" :item="item"/>
     <add-to-queue-dialog v-model="addToQueueDialog" :item="item"/>
+    <v-dialog v-model="playerDialog" max-width="1024px">
+      <v-card>
+        <v-responsive>
+          <vaem-player :url="playerUrl" v-if="playerDialog"/>
+        </v-responsive>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -76,10 +84,11 @@
   import clone from 'lodash/clone';
   import AddToQueueDialog from '@/components/uploads/AddToQueueDialog';
   import { socketio } from '@/util/socketio';
+  import VaemPlayer from '@/components/VaemPlayer';
 
   export default {
     name: 'Uploads',
-    components: { AddToQueueDialog, AssignToAssetDialog,  StreamsDialog, ItemList },
+    components: { VaemPlayer, AddToQueueDialog, AssignToAssetDialog,  StreamsDialog, ItemList },
     data: () => ({
       headers: [
         { text: 'Name', value: 'name' },
@@ -95,7 +104,9 @@
 
       assignToAssetDialog: false,
 
-      addToQueueDialog: false
+      addToQueueDialog: false,
+      playerDialog: false,
+      playerUrl: ''
     }),
     methods: {
       dragover(event) {
@@ -140,6 +151,11 @@
         if (event.target) {
           event.target.value = '';
         }
+      },
+
+      async preview(item) {
+        this.playerDialog = true;
+        this.playerUrl = (await this.$axios.post(`/uploads/${item._id}/preview`)).data;
       }
     },
 
