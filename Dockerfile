@@ -1,7 +1,10 @@
 FROM node:10
-COPY ./ /app
 WORKDIR /app
-RUN yarn && yarn build
+COPY package.json /app
+COPY yarn.lock /app
+RUN yarn
+COPY ./ /app
+RUN yarn build
 
 FROM nginx:stable-alpine
 RUN mkdir /app
