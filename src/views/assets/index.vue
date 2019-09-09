@@ -83,7 +83,7 @@
     <embed-dialog v-model="embedDialog" :item="item" @saved="update"/>
     <v-navigation-drawer right app width="400" :permanent="$vuetify.breakpoint.mdAndUp" v-model="navigationDrawer">
       <v-btn icon class="hidden-sm-and-up" :to="{name: 'assets'}"><v-icon>mdi-close</v-icon></v-btn>
-      <router-view name="right" @saved="update" :timestamp="timestamp"/>
+      <router-view name="right" @saved="update" :timestamp="timestamp" :labels="labels"/>
     </v-navigation-drawer>
   </v-container>
 </template>
