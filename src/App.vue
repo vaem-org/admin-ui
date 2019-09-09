@@ -21,7 +21,7 @@
     <router-view/>
   </v-app>
   <v-app v-else>
-    <v-app-bar app fixed class="hidden-lg-and-up">
+    <v-app-bar app fixed class="hidden-lg-and-up" v-if="$vuetify.breakpoint.mdAndDown">
       <v-app-bar-nav-icon @click="drawer=!drawer"/>
       <v-toolbar-title>
         VAEM
