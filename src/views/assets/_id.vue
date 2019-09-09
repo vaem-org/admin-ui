@@ -24,7 +24,17 @@
           <span>{{ item.title }}</span>
         </v-card-title>
         <v-card-text>
-          <v-img :src="thumbnail" :aspect-ratio="16/9" v-if="item.state === 'processed'"/>
+          <v-img :src="thumbnail" :aspect-ratio="16/9" v-if="item.state === 'processed'">
+            <template v-slot:placeholder>
+              <v-row
+                class="fill-height ma-0"
+                align="center"
+                justify="center"
+              >
+                <v-progress-circular indeterminate color="grey"></v-progress-circular>
+              </v-row>
+            </template>
+          </v-img>
           <v-switch label="Public" v-model="editItem.public"/>
           <v-text-field label="Title" v-model="editItem.title"/>
           <v-combobox label="Labels" v-model="editItem.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off"/>
