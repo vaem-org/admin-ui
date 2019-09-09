@@ -27,7 +27,7 @@
       </v-badge>
       <v-btn outlined color="primary" @click="copyDockerCommand">Copy docker command</v-btn>
 
-      <v-data-table :headers="headers" hide-default-footer :items="items">
+      <v-data-table :headers="headers" hide-default-footer :items="items" :mobile-breakpoint="0">
         <template v-slot:item.progress="{ item }">
           <v-progress-linear :value="calcProgress(item)" v-if="item.state.status !== 'idle'"/>
         </template>
@@ -114,7 +114,8 @@
           text: 'CPUs',
           value: 'cpus'
         }
-      ].map(item => ({...item, sortable: false}))
+      ].map(item => ({...item, sortable: false})),
+      dockerCommand: ''
     }),
     computed: {
       items() {
@@ -149,7 +150,7 @@
       },
 
       async copyDockerCommand() {
-        setClipboard((await this.$axios.get('/encoders/docker')).data);
+        setClipboard(this.dockerCommand);
       }
     },
     async mounted() {
@@ -179,6 +180,8 @@
       socket.on('queue-update', async () => {
         this.queue = (await this.$axios.get('/encoders/queue')).data;
       });
+
+      this.dockerCommand = (await this.$axios.get('/encoders/docker')).data;
     },
 
     destroyed() {

@@ -21,6 +21,12 @@
     <router-view/>
   </v-app>
   <v-app v-else>
+    <v-app-bar app fixed class="hidden-lg-and-up">
+      <v-app-bar-nav-icon @click="drawer=!drawer"/>
+      <v-toolbar-title>
+        VAEM
+      </v-toolbar-title>
+    </v-app-bar>
     <v-navigation-drawer
       fixed
       v-model="drawer"

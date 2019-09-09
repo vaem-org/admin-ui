@@ -81,7 +81,8 @@
     </v-dialog>
     <share-dialog v-model="shareDialog" :item="item"/>
     <embed-dialog v-model="embedDialog" :item="item" @saved="update"/>
-    <v-navigation-drawer right app width="400">
+    <v-navigation-drawer right app width="400" :permanent="$vuetify.breakpoint.mdAndUp" v-model="navigationDrawer">
+      <v-btn icon class="hidden-sm-and-up" :to="{name: 'assets'}"><v-icon>mdi-close</v-icon></v-btn>
       <router-view name="right" @saved="update" :timestamp="timestamp"/>
     </v-navigation-drawer>
   </v-container>
@@ -123,7 +124,9 @@
         loading: false,
         showEmbedButton: !!config.embedUrl,
         labels: [],
-        timestamp: Date.now()
+        timestamp: Date.now(),
+
+        navigationDrawer: this.$route.params.id !== undefined
       };
     },
     watch: {
@@ -196,6 +199,15 @@
     destroyed() {
       this.io.close();
       this.io = null;
+    },
+
+    beforeRouteUpdate(to, from, next) {
+      if (this.$vuetify.breakpoint.mdAndUp) {
+        return next();
+      }
+
+      this.navigationDrawer = to.params.id !== undefined;
+      next();
     }
   }
 </script>
