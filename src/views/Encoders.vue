@@ -113,10 +113,6 @@
         {
           text: 'CPUs',
           value: 'cpus'
-        },
-        {
-          text: 'Status',
-          value: 'item.state.status'
         }
       ].map(item => ({...item, sortable: false}))
     }),
