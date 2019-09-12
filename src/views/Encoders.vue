@@ -57,7 +57,7 @@
       <v-card>
         <v-card-title class="headline">Queue</v-card-title>
         <v-card-text>
-          <v-data-table :headers="queueHeaders" hide-default-footer :items="queue">
+          <v-data-table :headers="queueHeaders" hide-default-footer :items="queue" disable-pagination>
             <template v-slot:item.source="{ item }">
               {{ item.source | basename }}
             </template>
