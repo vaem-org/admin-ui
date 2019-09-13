@@ -187,7 +187,7 @@
     position: relative;
     overflow: hidden;
 
-    >>> .v-btn__content {
+    ::v-deep .v-btn__content {
       position: static;
     }
 

@@ -31,6 +31,7 @@
             item-text="title"
             item-value="_id"
             :rules="[v => !!v || 'Please select an asset']"
+            browser-autocomplete="off"
           />
           <v-select
             label="Language"
