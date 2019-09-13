@@ -108,7 +108,6 @@
           { text: 'Title', value: 'title' },
           { text: 'Public', value: 'public' },
           { text: 'Labels', value: 'labels' },
-          { text: 'State', value: 'state' },
           { text: 'Progress', value: 'progress' },
           { text: 'Date', value: 'createdAt' },
           { text: 'Duration', value: 'videoParameters.duration' },

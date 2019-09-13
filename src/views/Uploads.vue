@@ -115,9 +115,13 @@
 
       async addToQueue(items) {
         for(let upload of items) {
-          await this.$axios.post('/encoders/start-job', {
-            fileId: upload._id
-          });
+          if (!upload.asset || await this.$confirm(`${upload.name} is already associated with an asset. Do you want to re-encode it?`, {
+            title: 'Warning'
+          })) {
+            await this.$axios.post('/encoders/start-job', {
+              fileId: upload._id
+            });
+          }
         }
       },
 
@@ -133,6 +137,7 @@
 
       async uploadFiles(event) {
         const files = get(event, 'dataTransfer.files', get(event, 'target.files', []));
+        const target = event.target;
 
         const items = keyBy((await this.$axios.post('/uploads/prepare', Array.from(files).map(
           file => pick(file, ['size', 'name'])
@@ -148,8 +153,8 @@
           });
         }
 
-        if (event.target) {
-          event.target.value = '';
+        if (target) {
+          target.value = '';
         }
       },
 

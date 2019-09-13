@@ -64,8 +64,13 @@ _axios.interceptors.response.use(
     });
 
     localStorage.setItem('token', data.token);
-    error.config.headers['Authorization'] = `Bearer ${data.token}`;
-    return _axios.request(error.config);
+    return _axios.request({
+      ...error.config,
+      headers: {
+        ...error.config.headers,
+        'Authorization': `Bearer ${data.token}`
+      }
+    });
   }
 );
 
