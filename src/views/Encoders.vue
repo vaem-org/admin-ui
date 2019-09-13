@@ -151,11 +151,19 @@
 
       async copyDockerCommand() {
         setClipboard(this.dockerCommand);
+      },
+
+      async updateQueue() {
+        this.queue = (await this.$axios.get('/encoders/queue')).data.map((item, index) => ({
+          ...item,
+          index
+        }));
+
       }
     },
     async mounted() {
       this.encoders = (await this.$axios.get('/encoders')).data;
-      this.queue = (await this.$axios.get('/encoders/queue')).data;
+      this.updateQueue();
 
       this.io = socketio('/encoders-io');
 
@@ -178,7 +186,7 @@
         console.log(`Source done "${data.filename}"`);
       });
       socket.on('queue-update', async () => {
-        this.queue = (await this.$axios.get('/encoders/queue')).data;
+        this.updateQueue();
       });
 
       this.dockerCommand = (await this.$axios.get('/encoders/docker')).data;
