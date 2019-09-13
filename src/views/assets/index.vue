@@ -49,7 +49,7 @@
         {{ item.public ? 'Yes' : 'No' }}
       </template>
       <template v-slot:item.progress="{ item }">
-        <v-progress-linear :value="(item.bitrates || []).length / (item.jobs || []).length * 100"
+        <v-progress-linear :value="(item.bitrates || []).length / (item.numStreams || (item.jobs || []).length) * 100"
                            :color="item.state==='processed' ? 'success' : 'primary'"/>
       </template>
       <template v-slot:item.labels="{ item }">
