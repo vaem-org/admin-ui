@@ -68,7 +68,7 @@
     <v-dialog v-model="infoDialog" max-width="80%">
       <v-card>
         <v-card-text>
-          <tree-view :data="item" class="py-3"/>
+          <tree-view :data="item" class="py-3" :options="{maxDepth: 1}"/>
         </v-card-text>
       </v-card>
     </v-dialog>
