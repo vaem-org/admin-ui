@@ -24,7 +24,7 @@
           <span>{{ item.title }}</span>
         </v-card-title>
         <v-card-text>
-          <v-img :src="thumbnail" :aspect-ratio="16/9" v-if="item.state === 'processed'">
+          <v-img :src="thumbnail" :aspect-ratio="16/9" v-if="item.state === 'processed'" eager>
             <template v-slot:placeholder>
               <v-row
                 class="fill-height ma-0"

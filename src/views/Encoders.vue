@@ -62,7 +62,7 @@
               {{ item.source | basename }}
             </template>
             <template v-slot:item.bitrate="{ item }">
-              {{ item.options.maxrate || item.bitrate }}
+              {{ item.bitrate | bitrate }}
             </template>
             <template v-slot:item.actions="{ item }">
               <v-btn text icon @click="remove(item.index)">
@@ -123,7 +123,10 @@
       }
     },
     filters: {
-      get
+      get,
+      bitrate(value) {
+        return value instanceof Array ? value.join(', ') : value;
+      }
     },
     methods: {
       calcProgress(item) {
