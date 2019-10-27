@@ -159,8 +159,10 @@
         this[`${prop}Dialog`] = true;
       },
 
-      async addMissingBitrates(item) {
-        await this.$axios.post('/encoders/start-job', {assetId: item._id});
+      async addMissingBitrates() {
+        for(let item of this.items) {
+          await this.$axios.post('/encoders/start-job', {assetId: item._id});
+        }
       },
 
       async remove() {
