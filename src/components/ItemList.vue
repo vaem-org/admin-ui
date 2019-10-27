@@ -117,7 +117,7 @@
     methods: {
       update: debounce(async function({item, force=true}={force:true}) {
         if (item) {
-          const index = this.items.findIndex(_item => item.id === _item.id);
+          const index = this.items.findIndex(_item => item._id === _item._id);
           if (index !== -1) {
             this.$set(this.items, index, {
               ...this.items[index],
