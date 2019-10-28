@@ -86,19 +86,17 @@
       },
       options: {
         handler() {
-          this.options.page = 1;
           this.update({force: false}).catch(e => console.error(e));
         },
         deep: true
       },
       search() {
+        this.options.page = 1;
         this.update({force: false}).catch(e => console.error(e));
       },
-
       value(newValue) {
         this.selected = newValue;
       },
-
       selected(value) {
         this.$emit('input', value);
       }
