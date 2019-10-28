@@ -86,6 +86,7 @@
       },
       options: {
         handler() {
+          this.options.page = 1;
           this.update({force: false}).catch(e => console.error(e));
         },
         deep: true
