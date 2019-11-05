@@ -29,6 +29,9 @@
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].type!=='subtitle' || items[0].state !== 'complete'" @click="openDialog(items[0], 'assignToAsset')">Assign to asset</v-btn>
       <template v-slot:contextMenu="{ item }">
         <v-list>
+          <v-list-item v-if="item.state === 'complete'" @click="download(item)">
+            <v-list-item-title>Download</v-list-item-title>
+          </v-list-item>
           <v-list-item v-if="item.type==='video'" @click="addToQueue([item])">
             <v-list-item-title>Add to queue</v-list-item-title>
           </v-list-item>
@@ -161,6 +164,10 @@
       async preview(item) {
         this.playerDialog = true;
         this.playerUrl = (await this.$axios.post(`/uploads/${item._id}/preview`)).data;
+      },
+
+      async download(item) {
+        window.location = (await this.$axios.get(`/uploads/${item._id}/download`)).data;
       }
     },
 
