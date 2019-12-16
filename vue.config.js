@@ -15,10 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
   configureWebpack: {
-    devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map'
+    devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
+    plugins: [
+      new HardSourceWebpackPlugin()
+    ]
   },
   publicPath: process.env.BASE_URL || '${WEBPACK_BASE_URL}',
 };

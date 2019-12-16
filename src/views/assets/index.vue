@@ -18,7 +18,7 @@
 
 <template>
   <v-container>
-    <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading">
+    <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading" @menu="menuVisible=$event">
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'player')">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'share')">Share</v-btn>
@@ -125,7 +125,8 @@
         labels: [],
         timestamp: Date.now(),
 
-        navigationDrawer: this.$route.params.id !== undefined
+        navigationDrawer: this.$route.params.id !== undefined,
+        menuVisible: false
       };
     },
     watch: {

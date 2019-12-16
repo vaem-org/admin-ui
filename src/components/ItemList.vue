@@ -44,7 +44,7 @@
         <slot :name="name" v-bind="slotData" v-if="name!=='default'"/>
       </template>
       <template v-slot:item.contextMenu="{ item }">
-        <v-menu bottom right>
+        <v-menu bottom right @input="$emit('menu', $event)">
           <template v-slot:activator="{ on }">
             <v-btn text icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
