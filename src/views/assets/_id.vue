@@ -37,7 +37,7 @@
           </v-img>
           <v-switch label="Public" v-model="editItem.public"/>
           <v-text-field label="Title" v-model="editItem.title"/>
-          <v-combobox label="Labels" v-model="editItem.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off"/>
+          <v-combobox label="Labels" v-model="editItem.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off" :search-input.sync="labelsInput" @change="labelsInput=''"/>
           <div>
             <h3>
               Subtitles
@@ -107,7 +107,8 @@
       error: false,
       errorMessage: '',
       editItem: {},
-      thumbnails: {}
+      thumbnails: {},
+      labelsInput: ''
     }),
     computed: {
       subtitles() {
