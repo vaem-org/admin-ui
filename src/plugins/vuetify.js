@@ -31,9 +31,11 @@ const vuetify = new Vuetify({
   theme: { dark: mq.matches }
 });
 
-mq.addEventListener('change', (e) => {
-  console.log(Vuetify);
-  vuetify.framework.theme.dark = e.matches
-});
+if (mq.addEventListener) {
+  mq.addEventListener('change', (e) => {
+    console.log(Vuetify);
+    vuetify.framework.theme.dark = e.matches
+  });
+}
 
 export default vuetify;
