@@ -1,5 +1,5 @@
 /*
- * VAEM - Asset manager 
+ * VAEM - Asset manager
  * Copyright (C) 2019  Wouter van de Molengraft
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,20 @@ import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
 import '@mdi/font/css/materialdesignicons.css';
 
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+
 Vue.use(Vuetify);
 
-export default new Vuetify({
+const vuetify = new Vuetify({
   icons: {
     iconfont: 'mdi',
   },
+  theme: { dark: mq.matches }
 });
+
+mq.addEventListener('change', (e) => {
+  console.log(Vuetify);
+  vuetify.framework.theme.dark = e.matches
+});
+
+export default vuetify;

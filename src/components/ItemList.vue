@@ -18,7 +18,7 @@
 
 <template>
   <div class="elevation-1">
-    <v-container fluid class="white">
+    <v-container fluid>
       <v-layout row wrap class="px-1">
         <v-flex class="xs12 md3 order-md-2">
           <v-text-field prepend-icon="mdi-magnify" label="Search" v-model="search" clearable/>
