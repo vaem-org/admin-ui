@@ -17,11 +17,12 @@
  */
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
+const isProduction = process.env.NODE_ENV === 'production';
 module.exports = {
   configureWebpack: {
-    devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
+    devtool: isProduction ? false : 'eval-source-map',
     plugins: [
-      new HardSourceWebpackPlugin()
+      ...(isProduction ? [] : [new HardSourceWebpackPlugin()])
     ]
   },
   publicPath: process.env.BASE_URL || '${WEBPACK_BASE_URL}',
