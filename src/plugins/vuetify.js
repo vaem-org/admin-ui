@@ -33,7 +33,6 @@ const vuetify = new Vuetify({
 
 if (mq.addEventListener) {
   mq.addEventListener('change', (e) => {
-    console.log(Vuetify);
     vuetify.framework.theme.dark = e.matches
   });
 }

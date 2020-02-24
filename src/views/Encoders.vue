@@ -18,7 +18,7 @@
 
 <template>
   <v-container>
-    <div class="white elevation-1">
+    <div class="elevation-1">
       <v-badge right overlap :value="queue.length !== 0">
         <span slot="badge">{{ queue.length }}</span>
         <v-btn outlined color="primary" @click="queueDialog = true" class="ma-2">
