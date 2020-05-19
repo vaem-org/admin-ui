@@ -38,7 +38,7 @@
       >
         <v-list-item :to="{name: 'assets'}">
           <v-list-item-icon>
-            <v-icon>mdi-library-video</v-icon>
+            <v-icon>mdi-video</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
             Assets
