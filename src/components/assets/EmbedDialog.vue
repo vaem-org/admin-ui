@@ -21,6 +21,20 @@
     <v-card>
       <v-card-title>Embed asset</v-card-title>
       <v-card-text>
+        <v-row>
+          <v-col>
+            <v-switch label="Controls" v-model="controls"/>
+          </v-col>
+          <v-col>
+            <v-switch label="Auto play" v-model="autoplay"/>
+          </v-col>
+          <v-col>
+            <v-switch label="Muted" v-model="muted"/>
+          </v-col>
+          <v-col>
+            <v-switch label="Loop" v-model="loop"/>
+          </v-col>
+        </v-row>
         <div class="flex">
           <v-text-field v-model="embedUrl" label="URL" readonly filled/>
           <v-btn small icon @click="copyUrl" class="ma-2">
@@ -44,8 +58,9 @@
 </template>
 
 <script>
-  import Dialog from '@/mixins/Dialog';
   import get from 'lodash/get';
+  import { stringify } from 'querystring';
+  import Dialog from '@/mixins/Dialog';
   import setClipboard from '@/util/set-clipboard';
   import events from '@/events';
   import config from '@/config';
@@ -56,9 +71,23 @@
     props: {
       item: Object
     },
+    data: () => ({
+      controls: true,
+      autoplay: false,
+      muted: false,
+      loop: false
+    }),
     computed: {
       embedUrl() {
-        return `${config.embedUrl}/${this.item._id}`;
+        const query = stringify({
+          ...this.controls === false ? { controls: 0 } : {},
+          ...this.autoplay ? { autoplay: 1} : {},
+          ...this.muted ? { muted: 1} : {},
+          ...this.loop ? { loop: 1} : {},
+        });
+        const url = new URL(this.item._id, config.embedUrl);
+        url.search = query;
+        return url.toString();
       },
       embedCode() {
         const height = get(this.item, 'videoParameters.height', 0);
