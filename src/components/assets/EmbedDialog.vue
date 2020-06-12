@@ -85,7 +85,7 @@
           ...this.muted ? { muted: 1} : {},
           ...this.loop ? { loop: 1} : {},
         });
-        const url = new URL(this.item._id, config.embedUrl);
+        const url = new URL(config.embedUrl + '/' + this.item._id);
         url.search = query;
         return url.toString();
       },
