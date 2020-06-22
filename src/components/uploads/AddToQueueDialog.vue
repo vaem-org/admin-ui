@@ -27,6 +27,12 @@
           <v-text-field v-model="skip" label="Skip"/>
           <v-text-field v-model="videoFilter" label="Video filter"/>
           <v-text-field v-model="audio" label="Separate audio"/>
+          <v-switch
+            v-model="copyMaxVariant"
+            label="Copy maximum variant without transcoding"
+            hint="Use when restoring from backups"
+            persistent-hint
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
@@ -51,7 +57,8 @@
     data: () => ({
       skip: '',
       videoFilter: '',
-      audio: ''
+      audio: '',
+      copyMaxVariant: false
     }),
     methods: {
       async addToQueue() {
@@ -59,7 +66,8 @@
           fileId: this.item._id,
           audio: this.audio,
           vf: this.videoFilter,
-          ss: this.skip
+          ss: this.skip,
+          copyMaxVariant: this.copyMaxVariant
         });
         this.dialog = false;
       }
