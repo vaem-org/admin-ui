@@ -28,6 +28,7 @@
                       hide-default-footer
                       v-model="selectedStreams"
                       item-key="index"
+                      :items-per-page="Infinity"
         >
           <template v-slot:item.useAs="{ item }">
             <v-select v-if="item.codec_type === 'audio'" :items="getAudioOptions(item)" flat

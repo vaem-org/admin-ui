@@ -40,6 +40,9 @@
           <v-list-item @click="copyId(item)">
             <v-list-item-title>Copy id</v-list-item-title>
           </v-list-item>
+          <v-list-item @click="copyStreamUrl(item)">
+            <v-list-item-title>Copy stream url</v-list-item-title>
+          </v-list-item>
           <v-list-item @click="remove(item)">
             <v-list-item-title>Remove</v-list-item-title>
           </v-list-item>
@@ -160,10 +163,8 @@
         this[`${prop}Dialog`] = true;
       },
 
-      async addMissingBitrates() {
-        for(let item of this.items) {
-          await this.$axios.post('/encoders/start-job', {assetId: item._id});
-        }
+      async addMissingBitrates(item) {
+        await this.$axios.post('/encoders/start-job', { assetId: item._id });
       },
 
       async remove() {
@@ -179,6 +180,11 @@
         this.$refs.items.update({force: true});
         this.labels = (await this.$axios.get('/assets/labels')).data;
         this.timestamp = Date.now();
+      },
+
+      async copyStreamUrl(item) {
+        const { streamUrl } = (await this.$axios.get(`/streams/${item._id}/item`)).data;
+        setClipboard(config.apiUrl + streamUrl);
       }
     },
 

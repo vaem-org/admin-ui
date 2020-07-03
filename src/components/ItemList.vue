@@ -44,7 +44,7 @@
         <slot :name="name" v-bind="slotData" v-if="name!=='default'"/>
       </template>
       <template v-slot:item.contextMenu="{ item }">
-        <v-menu bottom right @input="$emit('menu', $event)">
+        <v-menu bottom right @input="onContextMenu($event, item)">
           <template v-slot:activator="{ on }">
             <v-btn text icon v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
@@ -151,6 +151,13 @@
         if (!this.selected.includes(item)) {
           this.selected = [item];
         }
+      },
+
+      onContextMenu($event, item) {
+        if (!this.selected.includes(item)) {
+          this.selected = [item];
+        }
+        this.$emit('menu', $event)
       }
     }
   }

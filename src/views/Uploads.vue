@@ -32,6 +32,9 @@
           <v-list-item v-if="item.state === 'complete'" @click="download(item)">
             <v-list-item-title>Download</v-list-item-title>
           </v-list-item>
+          <v-list-item v-if="item.state === 'complete'" @click="copyDownloadUrl(item)">
+            <v-list-item-title>Copy download url</v-list-item-title>
+          </v-list-item>
           <v-list-item v-if="item.type==='video'" @click="addToQueue([item])">
             <v-list-item-title>Add to queue</v-list-item-title>
           </v-list-item>
@@ -88,6 +91,7 @@
   import AddToQueueDialog from '@/components/uploads/AddToQueueDialog';
   import { socketio } from '@/util/socketio';
   import VaemPlayer from '@/components/VaemPlayer';
+  import setClipboard from '@/util/set-clipboard';
 
   export default {
     name: 'Uploads',
@@ -168,6 +172,12 @@
 
       async download(item) {
         window.location = (await this.$axios.get(`/uploads/${item._id}/download`)).data;
+      },
+
+      async copyDownloadUrl(item) {
+        setClipboard(
+          (await this.$axios.get(`/uploads/${item._id}/download`)).data
+        );
       }
     },
 
