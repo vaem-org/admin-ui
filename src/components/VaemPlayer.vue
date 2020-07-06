@@ -68,7 +68,6 @@
 
           let item;
 
-          console.log(this.url);
           if (this.url) {
             this.player.src({
               type: 'application/x-mpegURL',

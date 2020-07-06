@@ -54,9 +54,9 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-content>
+    <v-main>
       <router-view/>
-    </v-content>
+    </v-main>
     <v-footer app>
       <v-btn icon small :to="{path:'/encoders/'}" text class="mr-2">
         <v-icon small>mdi-server-network</v-icon>
