@@ -38,6 +38,11 @@
           <v-switch label="Public" v-model="editItem.public"/>
           <v-text-field label="Title" v-model="editItem.title"/>
           <v-combobox label="Labels" v-model="editItem.labels" tags chips deletable-chips :items="labels" multiple autocomplete="off" :search-input.sync="labelsInput" @change="labelsInput=''"/>
+          <v-text-field
+            v-if="showExternalId"
+            label="External id"
+            v-model="editItem.externalId"
+          />
           <div>
             <h3>
               Subtitles
@@ -108,7 +113,8 @@
       errorMessage: '',
       editItem: {},
       thumbnails: {},
-      labelsInput: ''
+      labelsInput: '',
+      showExternalId: process.env.VUE_APP_SHOW_EXTERNAL_ID
     }),
     computed: {
       subtitles() {
@@ -186,7 +192,8 @@
         await this.$axios.post(`/assets/${this.item._id}`, pick(this.editItem, [
           'title',
           'labels',
-          'public'
+          'public',
+          'externalId'
         ]));
 
         this.$emit('saved');
