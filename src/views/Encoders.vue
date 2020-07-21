@@ -50,6 +50,11 @@
         <template v-slot:item.cpus="{ item }">
           {{ item.info.cpus.length }}x {{ item|get('info.cpus[0].model')}}
         </template>
+        <template v-slot:item.actions="{ item }">
+          <v-btn text icon @click="quit(item)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
       </v-data-table>
     </div>
 
@@ -113,6 +118,10 @@
         {
           text: 'CPUs',
           value: 'cpus'
+        },
+        {
+          text: 'Actions',
+          value: 'actions'
         }
       ].map(item => ({...item, sortable: false})),
       dockerCommand: ''
@@ -162,6 +171,10 @@
           index
         }));
 
+      },
+
+      async quit({ id }) {
+        await this.$axios.delete(`/encoders/${id}`);
       }
     },
     async mounted() {
