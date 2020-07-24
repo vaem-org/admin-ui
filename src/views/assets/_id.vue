@@ -43,7 +43,7 @@
             label="External id"
             v-model="editItem.externalId"
           />
-          <div>
+          <div v-if="!editItem.live">
             <h3>
               Subtitles
               <v-btn icon small @click="uploadSubtitlePopup=true" color="primary"
@@ -57,6 +57,9 @@
               <v-btn @click="removeSubtitle(language)" icon><v-icon>mdi-delete</v-icon></v-btn>
             </div>
           </div>
+          <div v-else>
+            <v-text-field label="Source" v-model="editItem.sourceRTMP"/>
+          </div>
           <v-alert v-model="error" dismissible type="error">
             {{ errorMessage }}
           </v-alert>
@@ -68,6 +71,10 @@
         </v-card-actions>
       </v-form>
     </v-card>
+    <div v-if="editItem.live" class="mt-5">
+      <v-btn :loading="startingLiveStream" :disabled="startingLiveStream" color="red" @click="startLiveStream">Start live stream</v-btn>
+    </div>
+
     <v-dialog v-model="uploadSubtitlePopup" :persistent="uploading" max-width="500px">
       <v-form @submit.prevent="addSubtitle" lazy-validation ref="addSubtitle">
         <v-card>
@@ -114,7 +121,8 @@
       editItem: {},
       thumbnails: {},
       labelsInput: '',
-      showExternalId: process.env.VUE_APP_SHOW_EXTERNAL_ID
+      showExternalId: process.env.VUE_APP_SHOW_EXTERNAL_ID,
+      startingLiveStream: false
     }),
     computed: {
       subtitles() {
@@ -193,7 +201,8 @@
           'title',
           'labels',
           'public',
-          'externalId'
+          'externalId',
+          'sourceRTMP'
         ]));
 
         this.$emit('saved');
@@ -235,6 +244,18 @@
 
       async update() {
         this.item = (await this.$axios.get(`/assets/${this.$route.params.id}`)).data;
+      },
+
+      async startLiveStream() {
+        this.startingLiveStream = true;
+        try {
+          await this.$axios.post(`/encoders/live/${this.$route.params.id}/start`);
+        }
+        catch (e) {
+          this.error = true;
+          this.errorMessage = e.toString();
+        }
+        this.startingLiveStream = false;
       }
     },
     async mounted() {
