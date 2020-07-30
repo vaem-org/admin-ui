@@ -120,8 +120,8 @@
         event.dataTransfer.dropEffect = 'copy';
       },
 
-      async addToQueue(items) {
-        for(let upload of items) {
+      async addToQueue() {
+        for(let upload of this.items) {
           if (!upload.asset || await this.$confirm(`${upload.name} is already associated with an asset. Do you want to re-encode it?`, {
             title: 'Warning'
           })) {
@@ -137,8 +137,8 @@
         this[`${prop}Dialog`] = true;
       },
 
-      async remove(items) {
-        await this.$axios.post('/uploads/remove', items.map(item => item._id));
+      async remove() {
+        await this.$axios.post('/uploads/remove', this.items.map(item => item._id));
         this.$refs.items.update();
       },
 
