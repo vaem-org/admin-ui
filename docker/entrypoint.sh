@@ -11,7 +11,7 @@ do
     cp $file $file.tmpl.js
   fi
 
-  envsubst '$VUE_APP_API_URL,$VUE_APP_EMBED_URL,$WEBPACK_BASE_URL' < $file.tmpl.js > $file
+  envsubst '$VUE_APP_API_URL,$VUE_APP_EMBED_URL,$WEBPACK_BASE_URL,$VUE_APP_SHOW_EXTERNAL_ID' < $file.tmpl.js > $file
 done
 
 echo "Starting Nginx"

@@ -3,7 +3,6 @@ WORKDIR /app
 COPY package.json /app
 COPY yarn.lock /app
 RUN yarn
-ARG VUE_APP_SHOW_EXTERNAL_ID
 COPY ./ /app
 RUN yarn build
 

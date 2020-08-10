@@ -70,10 +70,13 @@
           <v-btn type="submit" color="primary" :loading="uploading" :disabled="!changed">Save</v-btn>
         </v-card-actions>
       </v-form>
+      <v-card-text>
+        <div v-if="editItem.live" class="mt-5">
+          <v-btn :loading="startingLiveStream" :disabled="startingLiveStream" color="red" @click="startLiveStream">Start</v-btn>
+          <v-btn class="ml-2" color="red" @click="stopLiveStream">Stop</v-btn>
+        </div>
+      </v-card-text>
     </v-card>
-    <div v-if="editItem.live" class="mt-5">
-      <v-btn :loading="startingLiveStream" :disabled="startingLiveStream" color="red" @click="startLiveStream">Start live stream</v-btn>
-    </div>
 
     <v-dialog v-model="uploadSubtitlePopup" :persistent="uploading" max-width="500px">
       <v-form @submit.prevent="addSubtitle" lazy-validation ref="addSubtitle">
@@ -121,7 +124,7 @@
       editItem: {},
       thumbnails: {},
       labelsInput: '',
-      showExternalId: process.env.VUE_APP_SHOW_EXTERNAL_ID,
+      showExternalId: config.showExternalId,
       startingLiveStream: false
     }),
     computed: {
@@ -256,9 +259,14 @@
           this.errorMessage = e.toString();
         }
         this.startingLiveStream = false;
+      },
+
+      async stopLiveStream() {
+        await this.$axios.post(`/encoders/live/${this.$route.params.id}/stop`);
       }
     },
     async mounted() {
+      console.log(config);
       this.update()
         .catch(e => console.error(e));
     }

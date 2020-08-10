@@ -20,7 +20,7 @@
   <v-container>
     <item-list :headers="headers" v-model="items" url="/assets" ref="items" :loading="loading" @menu="menuVisible=$event">
       <v-btn text tile color="primary" @click="addLiveAsset">Add live asset</v-btn>
-      <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'player')">Preview</v-btn>
+      <v-btn text tile color="primary" :disabled="items.length!==1 || (!items[0].live && items[0].state !== 'processed')" @click="openDialog(items[0], 'player')">Preview</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="download(items[0])">Download</v-btn>
       <v-btn text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'share')">Share</v-btn>
       <v-btn v-if="showEmbedButton" text tile color="primary" :disabled="items.length!==1 || items[0].state !== 'processed'" @click="openDialog(items[0], 'embed')">Embed</v-btn>
