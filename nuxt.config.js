@@ -145,6 +145,7 @@ export default {
   },
 
   router: {
-    middleware: ['auth']
+    middleware: ['auth'],
+    base: process.env.BASE ?? '/'
   }
 }
