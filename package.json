@@ -1,0 +1,38 @@
+{
+  "name": "vaem-admin-ui",
+  "version": "1.0.0",
+  "private": false,
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
+    "lint": "yarn lint:js"
+  },
+  "dependencies": {
+    "@nuxtjs/auth-next": "^5.0.0-1637745161.ea53f98",
+    "@nuxtjs/axios": "^5.13.6",
+    "@nuxtjs/pwa": "^3.3.5",
+    "@vaem/player": "^0.1.5",
+    "bytes": "^3.1.1",
+    "core-js": "^3.20.0",
+    "dayjs": "^1.10.7",
+    "nuxt": "^2.15.7",
+    "vue-json-tree-view": "^2.1.6",
+    "vuetify": "^2.6.1",
+    "vuetify-dialog": "^2.0.17"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.16.5",
+    "@nuxt/types": "^2.15.8",
+    "@nuxtjs/eslint-config": "^8.0.0",
+    "@nuxtjs/eslint-module": "^3.0.2",
+    "@nuxtjs/vuetify": "^1.12.3",
+    "eslint": "^8.4.1",
+    "eslint-plugin-nuxt": "^3.1.0",
+    "eslint-plugin-vue": "^8.2.0",
+    "nuxt-vite": "^0.3.5"
+  }
+}
