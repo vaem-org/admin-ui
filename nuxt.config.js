@@ -137,8 +137,8 @@ export default {
         codeChallengeMethod: '',
         responseType: 'code',
         endpoints: {
-          token: '/auth/google',
-          userInfo: '/me'
+          token: `${process.env.API_URL}/auth/google`,
+          userInfo: `${process.env.API_URL}/me`
         }
       }
     }
