@@ -41,7 +41,7 @@
     </v-card-title>
     <v-card-text
       :class="{ pointer: showPlayer }"
-      @click="play"
+      @click="playerDialog = true"
     >
       <v-responsive
         :aspect-ratio="16/9"
@@ -121,7 +121,7 @@
         <v-spacer />
         <v-btn
           :disabled="uploading || !changed || $fetchState.pending"
-          @click="$fetch"
+          @click="cancel"
         >
           Cancel
         </v-btn>
@@ -163,29 +163,17 @@
         </v-form>
       </v-card>
     </v-dialog>
-    <v-dialog
+    <dialog-player
       v-model="playerDialog"
-      width="600px"
-    >
-      <vaem-player
-        v-if="playerDialog"
-        :src="stream.stream"
-        autoplay
-        :text-tracks="textTracks"
-        :aspect-ratio="16/9"
-      />
-    </v-dialog>
+      :asset-id="source && source._id"
+    />
   </v-card>
 </template>
 
 <script>
 import { languages } from 'assets/defaults'
-import VaemPlayer from '@vaem/player'
 
 export default {
-  components: {
-    VaemPlayer
-  },
   props: {
     source: {
       type: Object,
@@ -203,19 +191,18 @@ export default {
     playerDialog: false,
     thumbnail: '',
     stream: '',
-    internalItem: {}
+    item: {},
+    originalItem: ''
   }),
   async fetch () {
-    if (!this.source) {
-      this.internalItem = await this.$axios.$get(`assets/${this.$route.params.id}`)
-    }
+    this.item = this.source ?? await this.$axios.$get(`assets/${this.$route.params.id}`)
     this.originalItem = JSON.stringify(this.item)
     this.labels = await this.$axios.$get('assets/distinct/labels')
     this.thumbnail = await this.$sign(`/assets/${this.$route.params.id}/thumbnail/0.png`)
   },
   head () {
     return {
-      title: this.item.title
+      title: this.item?.title
     }
   },
   computed: {
@@ -227,18 +214,8 @@ export default {
     changed () {
       return JSON.stringify(this.item) !== this.originalItem
     },
-    textTracks () {
-      return Object.entries(this.stream?.subtitles || {}).map(([srclang, src], i) => ({
-        src,
-        srclang,
-        default: i === 0
-      }))
-    },
     showPlayer () {
       return this.item.state === 'verified'
-    },
-    item () {
-      return this.source || this.internalItem
     }
   },
   watch: {
@@ -249,6 +226,7 @@ export default {
     },
     source (value) {
       this.originalItem = JSON.stringify(value)
+      this.item = JSON.parse(this.originalItem) ?? {}
     }
   },
   methods: {
@@ -316,14 +294,11 @@ export default {
       delete subtitles[language]
       this.$set(this.item, 'subtitles', subtitles)
     },
-    async play () {
-      if (this.showPlayer) {
-        this.stream = await this.$axios.$get(`assets/${this.item._id}/stream`)
-        this.playerDialog = true
-      }
-    },
     async downloadSubtitle (language) {
       location.href = await this.$sign(`/assets/${this.item._id}/subtitles/${language}`)
+    },
+    cancel () {
+      this.item = JSON.parse(this.originalItem)
     }
   }
 }
@@ -339,5 +314,9 @@ export default {
 
 .pointer {
   cursor: pointer;
+}
+
+.link {
+  text-decoration: underline;
 }
 </style>

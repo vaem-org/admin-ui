@@ -66,6 +66,13 @@
       </template>
       <v-btn
         :disabled="items.length !== 1 || items[0].state !== 'verified'"
+        @click="preview(items[0])"
+      >
+        Preview
+      </v-btn>
+      <v-btn
+        :disabled="items.length !== 1 || items[0].state !== 'verified'"
+        class="ml-2"
         @click="download(items[0])"
       >
         Download
@@ -134,6 +141,10 @@
       v-model="embedDialog"
       :item="items[0] || {}"
     />
+    <dialog-player
+      v-model="previewDialog"
+      :asset-id="previewAsset"
+    />
   </v-container>
 </template>
 
@@ -160,7 +171,9 @@ export default {
       dialog: false,
       infoDialog: false,
       shareAssetDialog: false,
-      embedDialog: false
+      embedDialog: false,
+      previewAsset: '',
+      previewDialog: false
     }
   },
   head () {
@@ -251,6 +264,10 @@ export default {
       }
 
       this.embedDialog = true
+    },
+    preview ({ _id }) {
+      this.previewAsset = _id
+      this.previewDialog = true
     }
   }
 }
