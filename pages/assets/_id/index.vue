@@ -120,7 +120,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn
-          :disabled="uploading || !changed || $fetchState.pending"
+          :disabled="uploading || !changed"
           @click="cancel"
         >
           Cancel
@@ -129,7 +129,7 @@
           type="submit"
           color="primary"
           :loading="uploading"
-          :disabled="!changed || $fetchState.pending"
+          :disabled="!changed"
         >
           Save
         </v-btn>
@@ -180,25 +180,22 @@ export default {
       default: () => null
     }
   },
-  data: () => ({
-    uploading: false,
-    labelsInput: '',
-    error: false,
-    errorMessage: '',
-    labels: [],
-    showAddSubtitle: false,
-    subtitle: {},
-    playerDialog: false,
-    thumbnail: '',
-    stream: '',
-    item: {},
-    originalItem: ''
-  }),
-  async fetch () {
-    this.item = this.source ?? await this.$axios.$get(`assets/${this.$route.params.id}`)
-    this.originalItem = JSON.stringify(this.item)
-    this.labels = await this.$axios.$get('assets/distinct/labels')
-    this.thumbnail = await this.$sign(`/assets/${this.$route.params.id}/thumbnail/0.png`)
+  data () {
+    const originalItem = this.source ? JSON.stringify(this.source) : ''
+    return {
+      uploading: false,
+      labelsInput: '',
+      error: false,
+      errorMessage: '',
+      labels: [],
+      showAddSubtitle: false,
+      subtitle: {},
+      playerDialog: false,
+      thumbnail: '',
+      stream: '',
+      item: originalItem ? JSON.parse(originalItem) : {},
+      originalItem
+    }
   },
   head () {
     return {
@@ -220,16 +217,32 @@ export default {
   },
   watch: {
     async $route (to) {
-      if (to.params.id !== this.item.id) {
-        await this.$fetch()
+      if (to.params.id !== this.source?.id) {
+        await this.update()
       }
     },
-    source (value) {
-      this.originalItem = JSON.stringify(value)
-      this.item = JSON.parse(this.originalItem) ?? {}
+    source: {
+      handler (value) {
+        this.originalItem = JSON.stringify(value)
+        this.item = JSON.parse(this.originalItem) ?? {}
+        return this.update()
+      },
+      immediate: true
     }
   },
+  mounted () {
+    return this.update()
+  },
   methods: {
+    async update () {
+      if (!this.source) {
+        this.item = await this.$axios.$get(`assets/${this.$route.params.id}`)
+        this.originalItem = JSON.stringify(this.item)
+      }
+      this.labels = await this.$axios.$get('assets/distinct/labels')
+      this.thumbnail = await this.$sign(`/assets/${this.$route.params.id}/thumbnail/0.png`)
+    },
+
     async saveItem () {
       this.uploading = true
       this.error = false
@@ -279,7 +292,6 @@ export default {
 
       this.$emit('saved')
       this.uploading = false
-      await this.$fetch()
     },
     addSubtitle () {
       this.$set(this.item, 'subtitles', {
