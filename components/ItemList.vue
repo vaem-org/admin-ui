@@ -144,8 +144,11 @@ export default {
         return
       }
 
+      const sort = (this.options.sortDesc[0] ? '-' : '') + this.options.sortBy
       const params = {
-        ...this.options,
+        page: this.options.page,
+        per_page: this.options.itemsPerPage,
+        sort: sort === '-createdAt' ? undefined : sort,
         q: this.search,
         populate: this.populate.length > 0 ? this.populate.join(',') : undefined
       }
