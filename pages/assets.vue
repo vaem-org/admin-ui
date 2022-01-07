@@ -1,6 +1,6 @@
 <!--
   - VAEM - Asset manager
-  - Copyright (C) 2021  Wouter van de Molengraft
+  - Copyright (C) 2022  Wouter van de Molengraft
   -
   - This program is free software: you can redistribute it and/or modify
   - it under the terms of the GNU General Public License as published by
@@ -55,6 +55,9 @@
         <v-list>
           <v-list-item @click="infoDialog=true">
             <v-list-item-title>Show info</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="copyStreamUrl(item)">
+            <v-list-item-title>Copy stream url</v-list-item-title>
           </v-list-item>
           <v-list-item @click="copyId(item)">
             <v-list-item-title>Copy id</v-list-item-title>
@@ -268,6 +271,10 @@ export default {
     preview ({ _id }) {
       this.previewAsset = _id
       this.previewDialog = true
+    },
+    async copyStreamUrl ({ _id }) {
+      const { stream } = await this.$axios.$get(`/assets/${_id}/stream`)
+      setClipboard(stream)
     }
   }
 }
