@@ -206,16 +206,35 @@ export default {
     }
   },
   mounted () {
-    this.timer = setInterval(() => {
-      this.$refs.items.update()
-        .then(() => {
-          if (this.$refs.items.items.filter(({ state }) => state !== 'verified').length === 0) {
-            clearTimeout(this.timer)
-          }
-        })
-        .catch((e) => {
-          console.warn(`Unable to update ${e.toString()}`)
-        })
+    this.timer = setInterval(async () => {
+      const ids = this.$refs.items.items
+        .filter(({ state }) => state !== 'verified')
+        .map(({ _id }) => _id)
+
+      if (ids.length === 0) {
+        return
+      }
+
+      // update progress for items that are not completed yet
+      for (const { _id, state, job: { progress } } of await this.$axios.$get('/assets/progress', {
+        params: {
+          ids: ids.join(',')
+        }
+      })) {
+        const item = this.$refs.items.items.find(({ _id: listId }) => listId === _id)
+        if (item) {
+          await this.$refs.items.update({
+            item: {
+              ...item,
+              state,
+              job: {
+                ...item.job,
+                progress
+              }
+            }
+          })
+        }
+      }
     }, 10000)
   },
   destroyed () {
