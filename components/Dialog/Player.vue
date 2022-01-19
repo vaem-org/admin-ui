@@ -22,7 +22,7 @@
     width="600px"
   >
     <vaem-player
-      v-if="stream"
+      v-if="stream && proxyValue"
       :src="stream.stream"
       autoplay
       :text-tracks="textTracks"
