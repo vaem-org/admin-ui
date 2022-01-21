@@ -89,21 +89,18 @@
         </v-btn>
         <v-btn
           :disabled="items.length === 0 || !onlyVideo || !isReady(items[0])"
-          class="ml-2"
           @click="encode(items)"
         >
           Encode
         </v-btn>
         <v-btn
           :disabled="items.length !== 1 || items[0].type!=='subtitle' || !isReady(items[0])"
-          class="ml-2"
           @click="assignToAsset(items[0])"
         >
           Assign to asset
         </v-btn>
         <v-btn
           :disabled="items.length === 0"
-          class="ml-2"
           @click="remove(items)"
         >
           Remove

@@ -75,28 +75,24 @@
       </v-btn>
       <v-btn
         :disabled="items.length !== 1 || items[0].state !== 'verified'"
-        class="ml-2"
         @click="download(items[0])"
       >
         Download
       </v-btn>
       <v-btn
         :disabled="items.length !== 1 || items[0].state !== 'verified'"
-        class="ml-2"
         @click="shareAssetDialog = true"
       >
         Share
       </v-btn>
       <v-btn
         :disabled="items.length !== 1 || items[0].state !== 'verified'"
-        class="ml-2"
         @click="embed"
       >
         Embed
       </v-btn>
       <v-btn
         :disabled="items.length === 0"
-        class="ml-2"
         @click="remove(items)"
       >
         Remove

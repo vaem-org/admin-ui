@@ -28,7 +28,7 @@
         />
       </v-col>
       <v-col cols="12" md="9">
-        <div class="d-flex flg">
+        <div class="d-flex flex-wrap buttons">
           <slot />
         </div>
       </v-col>
@@ -190,3 +190,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.buttons {
+  gap: 5px;
+}
+</style>
