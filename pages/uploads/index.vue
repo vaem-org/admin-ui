@@ -59,7 +59,7 @@
             </v-list-item>
             <v-list-item
               v-if="isReady(item)"
-              :href="`${$config.apiUrl}/files/${item._id}/download`"
+              @click="download(item)"
             >
               <v-list-item-title>Download</v-list-item-title>
             </v-list-item>
@@ -354,6 +354,9 @@ export default {
     },
     dragover ({ dataTransfer }) {
       dataTransfer.dropEffect = 'copy'
+    },
+    async download ({ _id }) {
+      location.href = await this.$sign(`/files/${_id}/download`)
     }
   }
 }
