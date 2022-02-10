@@ -152,6 +152,7 @@ import { TreeView } from 'vue-json-tree-view'
 import setClipboard from 'assets/set-clipboard'
 
 export default {
+  name: 'AssetsPage',
   components: {
     TreeView
   },

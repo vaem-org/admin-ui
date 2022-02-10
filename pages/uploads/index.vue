@@ -44,9 +44,9 @@
           <v-list>
             <v-list-item
               v-if="item.type==='video' && isReady(item)"
-              @click="encode([item])"
+              @click="advancedEncode(item)"
             >
-              <v-list-item-title>Encode</v-list-item-title>
+              <v-list-item-title>Advanced encode</v-list-item-title>
             </v-list-item>
             <v-list-item
               v-if="item.type==='subtitle'"
@@ -119,12 +119,16 @@
             </v-card-text>
           </v-card>
         </v-dialog>
-        <dialog-assign-to-asset
-          v-model="assignToAssetDialog"
-          :file="assignToAssetFile"
-        />
       </item-list>
     </v-container>
+    <dialog-assign-to-asset
+      v-model="assignToAssetDialog"
+      :file="assignToAssetFile"
+    />
+    <dialog-advanced-encode
+      v-model="advancedEncodeDialog"
+      :file="advancedEncodeFile"
+    />
   </div>
 </template>
 
@@ -132,6 +136,7 @@
 import { TreeView } from 'vue-json-tree-view'
 
 export default {
+  name: 'UploadsPage',
   components: {
     TreeView
   },
@@ -153,7 +158,9 @@ export default {
     assignToAssetDialog: false,
     queue: [],
     uploading: false,
-    resume: false
+    resume: false,
+    advancedEncodeDialog: false,
+    advancedEncodeFile: null
   }),
   head () {
     return {
@@ -357,6 +364,10 @@ export default {
     },
     async download ({ _id }) {
       location.href = await this.$sign(`/files/${_id}/download`)
+    },
+    advancedEncode (item) {
+      this.advancedEncodeFile = item
+      this.advancedEncodeDialog = true
     }
   }
 }

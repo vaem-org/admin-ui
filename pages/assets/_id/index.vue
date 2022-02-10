@@ -174,6 +174,7 @@
 import { languages } from 'assets/defaults'
 
 export default {
+  name: 'AssetPage',
   props: {
     source: {
       type: Object,
