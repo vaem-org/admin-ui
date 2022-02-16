@@ -37,6 +37,10 @@
             deletable-chips
             multiple
           />
+          <v-switch
+            v-model="copyHighestVariant"
+            label="Copy highest variant"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -68,7 +72,8 @@ export default {
   data: () => ({
     streams: [],
     loading: false,
-    audio: []
+    audio: [],
+    copyHighestVariant: false
   }),
   computed: {
     proxyValue: {
@@ -115,7 +120,8 @@ export default {
     async submit () {
       this.loading = true
       await this.$axios.post(`/files/${this.file._id}/encode`, {
-        audio: this.audio
+        audio: this.audio,
+        copyHighestVariant: this.copyHighestVariant
       })
       this.loading = false
       this.$emit('input', false)
