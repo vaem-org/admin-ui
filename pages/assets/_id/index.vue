@@ -172,6 +172,7 @@
 
 <script>
 import { languages } from 'assets/defaults'
+import { downloadBlob } from 'assets/blob'
 
 export default {
   name: 'AssetPage',
@@ -308,7 +309,10 @@ export default {
       this.$set(this.item, 'subtitles', subtitles)
     },
     async downloadSubtitle (language) {
-      location.href = await this.$sign(`/assets/${this.item._id}/subtitles/${language}`)
+      const data = await this.$axios.$get(`/assets/${this.item._id}/subtitles/${language}`, {
+        responseType: 'blob'
+      })
+      downloadBlob(data, `${this.item.title}.${language}.vtt`)
     },
     cancel () {
       this.item = JSON.parse(this.originalItem)
