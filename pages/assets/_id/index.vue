@@ -310,7 +310,10 @@ export default {
     },
     async downloadSubtitle (language) {
       const data = await this.$axios.$get(`/assets/${this.item._id}/subtitles/${language}`, {
-        responseType: 'blob'
+        responseType: 'blob',
+        params: {
+          direct: 1
+        }
       })
       downloadBlob(data, `${this.item.title}.${language}.vtt`)
     },
