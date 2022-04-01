@@ -12,13 +12,13 @@
     "lint": "yarn lint:js"
   },
   "dependencies": {
-    "@nuxtjs/auth-next": "^5.0.0-1642586282.9a32c7d",
+    "@nuxtjs/auth-next": "^5.0.0-1648802546.c9880dc",
     "@nuxtjs/axios": "^5.13.6",
     "@nuxtjs/pwa": "^3.3.5",
-    "@vaem/player": "^0.1.8",
+    "@vaem/player": "^0.1.14",
     "bytes": "^3.1.1",
     "core-js": "^3.20.3",
-    "dayjs": "^1.10.7",
+    "dayjs": "^1.11.0",
     "nuxt": "^2.15.7",
     "vue-json-tree-view": "^2.1.6",
     "vuetify": "^2.6.2",
@@ -27,11 +27,11 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.16.5",
     "@nuxt/types": "^2.15.8",
-    "@nuxtjs/eslint-config": "^8.0.0",
+    "@nuxtjs/eslint-config": "^9.0.0",
     "@nuxtjs/eslint-module": "^3.0.2",
     "@nuxtjs/vuetify": "^1.12.3",
-    "eslint": "^8.7.0",
-    "eslint-plugin-nuxt": "^3.1.0",
+    "eslint": "^8.12.0",
+    "eslint-plugin-nuxt": "^3.2.0",
     "eslint-plugin-vue": "^8.3.0",
     "nuxt-vite": "^0.3.5"
   }

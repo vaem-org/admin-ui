@@ -51,6 +51,19 @@
           v-bind="progress(item)"
         />
       </template>
+      <template #[`item.eta`]="{ item }">
+        <div
+          v-if="!['completed','verified'].includes(item.state)"
+          class="text-no-wrap"
+        >
+          <v-icon
+            small
+          >
+            mdi-clock-outline
+          </v-icon>
+          {{ item | eta }}
+        </div>
+      </template>
       <template #contextMenu="{ item }">
         <v-list>
           <v-list-item @click="infoDialog=true">
@@ -150,30 +163,45 @@
 <script>
 import { TreeView } from 'vue-json-tree-view'
 import setClipboard from 'assets/set-clipboard'
+import dayjs from 'dayjs'
 
 export default {
   name: 'AssetsPage',
   components: {
     TreeView
   },
+  filters: {
+    eta (item) {
+      if (['verified', 'completed'].includes(item.state)) {
+        return ''
+      }
+
+      const { createdAt, progress } = item.job ?? {}
+      const duration = parseFloat(item.ffprobe?.format?.duration ?? '0')
+      const eta = dayjs().add((dayjs().diff(createdAt, 'seconds') / progress) * (duration - progress), 'seconds')
+
+      return eta.isValid() ? eta.format('HH:mm') : ''
+    }
+  },
   data () {
     return {
       items: this.$route.params.id ? [{ _id: this.$route.params.id }] : [],
-      headers: [
-        { text: 'Title', value: 'title' },
-        { text: 'Public', value: 'public' },
-        { text: 'Labels', value: 'labels' },
-        { text: 'Progress', value: 'progress' },
-        { text: 'Date', value: 'createdAt' },
-        { text: 'Duration', value: 'ffprobe.format.duration' },
-        { text: 'Subtitles', value: 'subtitles' }
-      ],
       dialog: false,
       infoDialog: false,
       shareAssetDialog: false,
       embedDialog: false,
       previewAsset: '',
-      previewDialog: false
+      previewDialog: false,
+      headers: [
+        { text: 'Title', value: 'title' },
+        { text: 'Public', value: 'public' },
+        { text: 'Labels', value: 'labels' },
+        { text: 'Progress', value: 'progress' },
+        { text: 'ETA', value: 'eta' },
+        { text: 'Date', value: 'createdAt' },
+        { text: 'Duration', value: 'ffprobe.format.duration' },
+        { text: 'Subtitles', value: 'subtitles' }
+      ]
     }
   },
   head () {

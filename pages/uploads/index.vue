@@ -129,16 +129,28 @@
       v-model="advancedEncodeDialog"
       :file="advancedEncodeFile"
     />
+    <v-dialog
+      v-model="previewDialog"
+      width="600px"
+    >
+      <vaem-player
+        :src="previewUrl"
+        :aspect-ratio="16/9"
+        autoplay
+      />
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import { TreeView } from 'vue-json-tree-view'
+import VaemPlayer from '@vaem/player'
 
 export default {
   name: 'UploadsPage',
   components: {
-    TreeView
+    TreeView,
+    VaemPlayer
   },
   data: () => ({
     headers: [
@@ -160,7 +172,10 @@ export default {
     uploading: false,
     resume: false,
     advancedEncodeDialog: false,
-    advancedEncodeFile: null
+    advancedEncodeFile: null,
+    previewDialog: false,
+    previewPreparing: false,
+    previewUrl: ''
   }),
   head () {
     return {
@@ -368,6 +383,12 @@ export default {
     advancedEncode (item) {
       this.advancedEncodeFile = item
       this.advancedEncodeDialog = true
+    },
+    async preview ({ _id }) {
+      this.previewPreparing = true
+      this.previewUrl = await this.$axios.$post(`/files/${_id}/preview`)
+      this.previewPreparing = false
+      this.previewDialog = true
     }
   }
 }
