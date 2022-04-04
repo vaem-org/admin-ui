@@ -1903,9 +1903,9 @@
     eslint-visitor-keys "^3.0.0"
 
 "@vaem/player@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@vaem/player/-/player-0.1.14.tgz#45c0500ae1ecb3844cbf6a55de9ef01d3b89cb3a"
-  integrity sha512-2QZZ4ooAEV6Srd2saLDy+jxyktpqlJvxqsWxLncn3xbDGtAzLKDLPjnlcWCRNbO9MNo8gl0JYBoqvGySJC4hgg==
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/@vaem/player/-/player-0.1.16.tgz#e3a21929916d77d5a3b9e0842df840415e6690af"
+  integrity sha512-1BrwmIgtAjqbX52acGO61XkESTaAKfxRBZkjz1z2l/WcmdgKBSbSdwDC2OJ2EnbttX7MGoNxD7ywOhgCaH+3ug==
   dependencies:
     "@jamescoyle/vue-icon" "^0.1.2"
     "@mdi/js" "^6.5.95"

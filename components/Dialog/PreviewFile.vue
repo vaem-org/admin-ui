@@ -20,54 +20,61 @@
   <v-dialog
     v-model="proxyValue"
     width="600"
-    :persistent="loading"
   >
     <v-card
+      v-if="!previewUrl"
       :loading="loading"
     >
-      <v-form @submit.prevent="submit">
+      <v-form @submit.prevent="preview">
         <v-card-text>
           <input-audio-streams
             v-model="audio"
             :file="file"
           />
-          <v-switch
-            v-model="copyHighestVariant"
-            label="Copy highest variant"
-          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
+            color="primary"
             type="submit"
-            :loading="loading"
+            :disabled="loading"
           >
-            Save
+            Preview
           </v-btn>
         </v-card-actions>
       </v-form>
     </v-card>
+    <vaem-player
+      v-else-if="value"
+      :src="previewUrl"
+      :aspect-ratio="16/9"
+      autoplay
+    />
   </v-dialog>
 </template>
 
 <script>
+import VaemPlayer from '@vaem/player'
+
 export default {
-  name: 'DialogAdvancedEncode',
+  name: 'DialogPreviewFile',
+  components: {
+    VaemPlayer
+  },
   props: {
-    file: {
-      type: Object,
-      default: () => null
-    },
     value: {
       type: Boolean,
       required: true
+    },
+    file: {
+      type: Object,
+      default: () => null
     }
   },
   data: () => ({
-    streams: [],
-    loading: false,
     audio: [],
-    copyHighestVariant: false
+    previewUrl: '',
+    loading: false
   }),
   computed: {
     proxyValue: {
@@ -80,14 +87,17 @@ export default {
     }
   },
   methods: {
-    async submit () {
+    async preview () {
       this.loading = true
-      await this.$axios.post(`/files/${this.file._id}/encode`, {
-        audio: this.audio,
-        copyHighestVariant: this.copyHighestVariant
-      })
-      this.loading = false
-      this.$emit('input', false)
+      try {
+        this.previewUrl = await this.$axios.$post(`/files/${this.file._id}/preview`, {
+          audio: this.audio
+        })
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this.loading = false
+      }
     }
   }
 }

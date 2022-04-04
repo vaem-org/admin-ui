@@ -88,6 +88,12 @@
           Resume
         </v-btn>
         <v-btn
+          :disabled="items.length !== 1 || items[0].type!=='video' || !isReady(items[0])"
+          @click="preview(items[0])"
+        >
+          Preview
+        </v-btn>
+        <v-btn
           :disabled="items.length === 0 || !onlyVideo || !isReady(items[0])"
           @click="encode(items)"
         >
@@ -129,28 +135,20 @@
       v-model="advancedEncodeDialog"
       :file="advancedEncodeFile"
     />
-    <v-dialog
+    <dialog-preview-file
       v-model="previewDialog"
-      width="600px"
-    >
-      <vaem-player
-        :src="previewUrl"
-        :aspect-ratio="16/9"
-        autoplay
-      />
-    </v-dialog>
+      :file="previewFile"
+    />
   </div>
 </template>
 
 <script>
 import { TreeView } from 'vue-json-tree-view'
-import VaemPlayer from '@vaem/player'
 
 export default {
   name: 'UploadsPage',
   components: {
-    TreeView,
-    VaemPlayer
+    TreeView
   },
   data: () => ({
     headers: [
@@ -174,8 +172,7 @@ export default {
     advancedEncodeDialog: false,
     advancedEncodeFile: null,
     previewDialog: false,
-    previewPreparing: false,
-    previewUrl: ''
+    previewFile: null
   }),
   head () {
     return {
@@ -384,10 +381,8 @@ export default {
       this.advancedEncodeFile = item
       this.advancedEncodeDialog = true
     },
-    async preview ({ _id }) {
-      this.previewPreparing = true
-      this.previewUrl = await this.$axios.$post(`/files/${_id}/preview`)
-      this.previewPreparing = false
+    preview (item) {
+      this.previewFile = item
       this.previewDialog = true
     }
   }
