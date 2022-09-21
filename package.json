@@ -21,7 +21,7 @@
     "dayjs": "^1.11.2",
     "nuxt": "^2.15.7",
     "vue-json-tree-view": "^2.1.6",
-    "vuetify": "^2.6.6",
+    "vuetify": "^2.6.10",
     "vuetify-dialog": "^2.0.17"
   },
   "devDependencies": {
