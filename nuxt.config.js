@@ -68,7 +68,6 @@ export default {
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
-    'nuxt-vite',
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module',
     // https://go.nuxtjs.dev/vuetify
@@ -120,12 +119,6 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
     transpile: ['@vaem/player']
-  },
-
-  vite: {
-    optimizeDeps: {
-      include: ['videojs-vtt.js', 'hls.js', 'cookie']
-    }
   },
 
   auth: {

@@ -176,9 +176,9 @@ export default {
         return ''
       }
 
-      const { createdAt, progress } = item.job ?? {}
+      const { startedAt, progress } = item.job ?? {}
       const duration = parseFloat(item.ffprobe?.format?.duration ?? '0')
-      const eta = dayjs().add((dayjs().diff(createdAt, 'seconds') / progress) * (duration - progress), 'seconds')
+      const eta = dayjs().add((dayjs().diff(startedAt, 'seconds') / progress) * (duration - progress), 'seconds')
 
       return eta.isValid() ? eta.format('HH:mm') : ''
     }
