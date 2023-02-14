@@ -130,9 +130,17 @@ export default {
       }
 
       this.loading = true
-      await this.$axios.post(`files/${this.file._id}/assign/${this.asset}/${this.language}`)
+      try {
+        await this.$axios.post(`files/${this.file._id}/assign/${this.asset}/${this.language}`)
+        this.$emit('input', false)
+      } catch (e) {
+        console.error(e.response?.data ?? e)
+        this.$store.commit('flash/setMessage', {
+          message: 'An error occurred',
+          color: 'error'
+        })
+      }
       this.loading = false
-      this.$emit('input', false)
     }
   }
 }
