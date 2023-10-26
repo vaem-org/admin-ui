@@ -31,6 +31,7 @@
             solo
           />
           <v-btn
+            v-if="$slots.filters"
             icon
             class="ml-3"
             @click="showFilters = !showFilters"
