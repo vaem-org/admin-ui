@@ -24,7 +24,19 @@
       url="/assets"
       :headers="headers"
       :populate="['job']"
+      :filter="filter"
     >
+      <template #filters>
+        <v-combobox
+          v-model="labels"
+          :items="availableLabels"
+          label="Labels"
+          multiple
+          chips
+          deletable-chips
+        />
+      </template>
+
       <template #[`item.ffprobe.format.duration`]="{ item }">
         {{ item.ffprobe.format.duration | duration }}
       </template>
@@ -110,6 +122,13 @@
       >
         Remove
       </v-btn>
+      <v-btn
+        :loading="exporting"
+        :disabled="exporting"
+        @click="exportItems"
+      >
+        Export
+      </v-btn>
     </item-list>
     <v-dialog
       v-if="$vuetify.breakpoint.xsOnly"
@@ -183,8 +202,15 @@ export default {
       return eta.isValid() ? eta.format('HH:mm') : ''
     }
   },
+  async asyncData ({ app }) {
+    return {
+      availableLabels: await app.$axios.$get('assets/distinct/labels')
+    }
+  },
   data () {
     return {
+      labels: [],
+      availableLabels: [],
       items: this.$route.params.id ? [{ _id: this.$route.params.id }] : [],
       dialog: false,
       infoDialog: false,
@@ -192,6 +218,7 @@ export default {
       embedDialog: false,
       previewAsset: '',
       previewDialog: false,
+      exporting: false,
       headers: [
         { text: 'Title', value: 'title' },
         { text: 'Public', value: 'public' },
@@ -207,6 +234,17 @@ export default {
   head () {
     return {
       title: 'Assets'
+    }
+  },
+  computed: {
+    filter () {
+      return this.labels.length > 0
+        ? {
+            labels: {
+              $all: this.labels
+            }
+          }
+        : {}
     }
   },
   watch: {
@@ -319,6 +357,34 @@ export default {
     async copyStreamUrl ({ _id }) {
       const { stream } = await this.$axios.$get(`/assets/${_id}/stream`)
       setClipboard(stream)
+    },
+    async exportItems () {
+      this.exporting = true
+      try {
+        await this.$refs.items.exportItems({
+          filenamePrefix: 'assets',
+          itemModifier: ({
+            _id,
+            createdAt,
+            title,
+            labels,
+            ffprobe,
+            subtitles = {}
+          }) => ({
+            id: _id,
+            createdAt: new Date(createdAt),
+            title,
+            labels: labels.join(', '),
+            duration: ffprobe?.format?.duration,
+            subtitles: Object.entries(subtitles)
+              .filter(([, enabled]) => enabled)
+              .map(([language]) => language)
+              .join(', ')
+          })
+        })
+      } finally {
+        this.exporting = false
+      }
     }
   }
 }

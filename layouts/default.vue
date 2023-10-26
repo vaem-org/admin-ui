@@ -77,6 +77,7 @@
 <script>
 import { mapState } from 'vuex'
 export default {
+  name: 'DefaultLayout',
   data () {
     return {
       drawer: true

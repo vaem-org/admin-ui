@@ -22,7 +22,8 @@
     "nuxt": "^2.15.7",
     "vue-json-tree-view": "^2.1.6",
     "vuetify": "^2.6.6",
-    "vuetify-dialog": "^2.0.17"
+    "vuetify-dialog": "^2.0.17",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.16.5",

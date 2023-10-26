@@ -19,13 +19,25 @@
   <div class="elevation-1">
     <v-row row wrap align="center" class="mb-3">
       <v-col cols="12" md="3" class="order-md-2">
-        <v-text-field
-          v-model="search"
-          prepend-icon="mdi-magnify"
-          label="Search"
-          clearable
-          hide-details
-        />
+        <div class="d-flex align-center">
+          <v-text-field
+            v-model="search"
+            prepend-inner-icon="mdi-magnify"
+            placeholder="Search"
+            clearable
+            hide-details
+            dense
+            filled
+            solo
+          />
+          <v-btn
+            icon
+            class="ml-3"
+            @click="showFilters = !showFilters"
+          >
+            <v-icon>mdi-filter-variant</v-icon>
+          </v-btn>
+        </div>
       </v-col>
       <v-col cols="12" md="9">
         <div class="d-flex flex-wrap buttons">
@@ -33,6 +45,12 @@
         </div>
       </v-col>
     </v-row>
+    <v-expand-transition>
+      <div v-if="showFilters">
+        <slot name="filters" />
+      </div>
+    </v-expand-transition>
+
     <v-data-table
       v-model="selected"
       :headers="modifiedHeaders"
@@ -65,6 +83,8 @@
 
 <script>
 /* eslint-disable no-console */
+import dayjs from 'dayjs'
+
 export default {
   name: 'ItemList',
   props: {
@@ -84,6 +104,10 @@ export default {
     populate: {
       type: Array,
       default: () => []
+    },
+    filter: {
+      type: Object,
+      default: null
     }
   },
   data: () => ({
@@ -94,7 +118,8 @@ export default {
       sortBy: ['createdAt'],
       sortDesc: [true]
     },
-    selected: []
+    selected: [],
+    showFilters: false
   }),
   computed: {
     modifiedHeaders () {
@@ -104,10 +129,31 @@ export default {
             { text: '', value: 'contextMenu', sortable: false },
             ...this.headers
           ]
+    },
+    queryParams () {
+      const sort = (this.options.sortDesc[0] ? '-' : '') + this.options.sortBy
+
+      return {
+        page: this.options.page,
+        per_page: this.options.itemsPerPage,
+        sort: sort === '-createdAt' ? undefined : sort,
+        q: this.search,
+        populate: this.populate.length > 0 ? this.populate.join(',') : undefined,
+        filter: JSON.stringify({
+          ...this.filter,
+          deleted: {
+            $ne: true
+          }
+        })
+      }
     }
   },
   watch: {
     url () {
+      this.update().catch(e => console.error(e))
+    },
+    filter () {
+      console.log('Filter changed')
       this.update().catch(e => console.error(e))
     },
     options: {
@@ -144,26 +190,10 @@ export default {
         return
       }
 
-      const sort = (this.options.sortDesc[0] ? '-' : '') + this.options.sortBy
-      const params = {
-        page: this.options.page,
-        per_page: this.options.itemsPerPage,
-        sort: sort === '-createdAt' ? undefined : sort,
-        q: this.search,
-        populate: this.populate.length > 0 ? this.populate.join(',') : undefined
-      }
-
-      const stringifiedParams = JSON.stringify(params)
+      const stringifiedParams = JSON.stringify(this.queryParams)
       if (stringifiedParams !== this.previousParams || force) {
         const { data: items, headers } = await this.$axios.get(this.url, {
-          params: {
-            ...params,
-            filter: JSON.stringify({
-              deleted: {
-                $ne: true
-              }
-            })
-          }
+          params: this.queryParams
         })
         const selectedIds = this.selected.map(item => item._id)
         this.items = items
@@ -186,6 +216,41 @@ export default {
         this.selected = [item]
       }
       this.$emit('menu', $event)
+    },
+
+    /**
+     * Export items
+     * @param {string} filenamePrefix the prefix of the filename
+     * @param {function} [itemModifier] optionally convert items using this function
+     * @return {Promise<void>}
+     */
+    async exportItems ({
+      filenamePrefix,
+      itemModifier = item => item
+    }) {
+      let items = []
+      let page = 0
+      do {
+        items = items.concat((await this.$axios.$get(this.url, {
+          params: {
+            ...this.queryParams,
+            page,
+            per_page: 500
+          }
+        })).map(itemModifier))
+        page++
+      } while (items.length < this.totalItems)
+
+      const {
+        utils,
+        writeFileXLSX
+      } = await import(/* webpackChunkName: 'xlsx' */ 'xlsx')
+      const workbook = utils.book_new()
+      utils.book_append_sheet(workbook, utils.json_to_sheet(items), 'assets')
+
+      writeFileXLSX(workbook, `${filenamePrefix}-${dayjs().format('YYYY-MM-DD')}.xlsx`, {
+        cellDates: true
+      })
     }
   }
 }
