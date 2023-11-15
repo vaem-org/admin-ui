@@ -27,7 +27,18 @@
     >
       <v-form @submit.prevent="submit">
         <v-card-text>
+          <v-switch
+            v-model="useCustomAudioFilter"
+            label="Use custom audio filter"
+          />
+          <v-text-field
+            v-if="useCustomAudioFilter"
+            v-model="customAudioFilter"
+            label="Custom audio filter"
+            filled
+          />
           <input-audio-streams
+            v-if="!useCustomAudioFilter"
             v-model="audio"
             :file="file"
           />
@@ -67,7 +78,9 @@ export default {
     streams: [],
     loading: false,
     audio: [],
-    copyHighestVariant: false
+    copyHighestVariant: false,
+    customAudioFilter: '',
+    useCustomAudioFilter: false
   }),
   computed: {
     proxyValue: {
@@ -77,15 +90,24 @@ export default {
       set (value) {
         this.$emit('input', value)
       }
+    },
+    payload () {
+      return {
+        audio: this.audio,
+        copyHighestVariant: this.copyHighestVariant,
+        customAudioFilter: this.useCustomAudioFilter
+          ? [
+              '-filter_complex', this.customAudioFilter,
+              '-map', '[a]'
+            ]
+          : []
+      }
     }
   },
   methods: {
     async submit () {
       this.loading = true
-      await this.$axios.post(`/files/${this.file._id}/encode`, {
-        audio: this.audio,
-        copyHighestVariant: this.copyHighestVariant
-      })
+      await this.$axios.post(`/files/${this.file._id}/encode`, this.payload)
       this.loading = false
       this.$emit('input', false)
     }
