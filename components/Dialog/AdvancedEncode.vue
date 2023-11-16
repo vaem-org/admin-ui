@@ -95,12 +95,7 @@ export default {
       return {
         audio: this.audio,
         copyHighestVariant: this.copyHighestVariant,
-        customAudioFilter: this.useCustomAudioFilter
-          ? [
-              '-filter_complex', this.customAudioFilter,
-              '-map', '[a]'
-            ]
-          : []
+        customAudioFilter: this.customAudioFilter
       }
     }
   },
