@@ -42,6 +42,11 @@
             v-model="audio"
             :file="file"
           />
+          <v-text-field
+            v-model="ss"
+            label="Start time offset"
+            filled
+          />
           <v-switch
             v-model="copyHighestVariant"
             label="Copy highest variant"
@@ -80,7 +85,8 @@ export default {
     audio: [],
     copyHighestVariant: false,
     customAudioFilter: '',
-    useCustomAudioFilter: false
+    useCustomAudioFilter: false,
+    ss: ''
   }),
   computed: {
     proxyValue: {
@@ -95,7 +101,8 @@ export default {
       return {
         audio: this.audio,
         copyHighestVariant: this.copyHighestVariant,
-        customAudioFilter: this.customAudioFilter
+        customAudioFilter: this.customAudioFilter,
+        ss: this.ss
       }
     }
   },
