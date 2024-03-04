@@ -109,6 +109,11 @@ export default {
     }
   },
   watch: {
+    value (value) {
+      if (value) {
+        this.searchInput = ''
+      }
+    },
     async searchInput (value) {
       this.assets = await this.$axios.$get('/assets', {
         params: {

@@ -106,6 +106,18 @@ export default {
       }
     }
   },
+  watch: {
+    value (value) {
+      if (value) {
+        this.streams = []
+        this.audio = []
+        this.copyHighestVariant = false
+        this.customAudioFilter = ''
+        this.useCustomAudioFilter = false
+        this.ss = ''
+      }
+    }
+  },
   methods: {
     async submit () {
       this.loading = true

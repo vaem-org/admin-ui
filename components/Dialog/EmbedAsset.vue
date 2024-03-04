@@ -107,6 +107,16 @@ export default {
       return iframe
     }
   },
+  watch: {
+    value (value) {
+      if (value) {
+        this.controls = true
+        this.autoplay = false
+        this.muted = false
+        this.loop = false
+      }
+    }
+  },
   methods: {
     copy (value) {
       setClipboard(value)
