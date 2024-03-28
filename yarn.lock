@@ -9912,6 +9912,11 @@ webpackbar@^6.0.0:
     std-env "^3.7.0"
     wrap-ansi "^7.0.0"
 
+webvtt-parser@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/webvtt-parser/-/webvtt-parser-2.2.0.tgz#79029fb9067edcb210820fa6101c37d9b8b78d9f"
+  integrity sha512-FzmaED+jZyt8SCJPTKbSsimrrnQU8ELlViE1wuF3x1pgiQUM8Llj5XWj2j/s6Tlk71ucPfGSMFqZWBtKn/0uEA==
+
 whatwg-url@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/whatwg-url/-/whatwg-url-5.0.0.tgz#966454e8765462e37644d3626f6742ce8b70965d"

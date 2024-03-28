@@ -54,6 +54,12 @@
             >
               <v-list-item-title>Assign to asset</v-list-item-title>
             </v-list-item>
+            <v-list-item
+              v-if="item.type==='subtitle'"
+              @click="editAndAssignToAsset(item)"
+            >
+              <v-list-item-title>Edit and assign to asset</v-list-item-title>
+            </v-list-item>
             <v-list-item @click="showInfo(item)">
               <v-list-item-title>Show info</v-list-item-title>
             </v-list-item>
@@ -131,6 +137,11 @@
       v-model="assignToAssetDialog"
       :file="assignToAssetFile"
     />
+    <dialog-subtitle-edit
+      v-model="editAndAssignToAssetDialog"
+      :subtitle-url="editAndAssignToAssetUrl"
+      @webvtt="saveWebVtt"
+    />
     <dialog-advanced-encode
       v-model="advancedEncodeDialog"
       :file="advancedEncodeFile"
@@ -172,7 +183,9 @@ export default {
     advancedEncodeDialog: false,
     advancedEncodeFile: null,
     previewDialog: false,
-    previewFile: null
+    previewFile: null,
+    editAndAssignToAssetDialog: false,
+    editAndAssignToAssetUrl: null
   }),
   head () {
     return {
@@ -241,6 +254,16 @@ export default {
     assignToAsset (item) {
       this.assignToAssetFile = item
       this.assignToAssetDialog = true
+    },
+    editAndAssignToAsset (item) {
+      this.editAndAssignToAssetUrl = /\.vtt$/i.exec(item.name)
+        ? `/files/${item._id}/download`
+        : `/files/${item._id}/convert.vtt`
+      this.editAndAssignToAssetDialog = true
+    },
+    async saveWebVtt ({ webVtt, assetId, language }) {
+      await this.$axios.$put(`/assets/${assetId}/subtitles/${language}/${language}.vtt`, webVtt)
+      this.editAndAssignToAssetDialog = false
     },
     isReady ({
       size,

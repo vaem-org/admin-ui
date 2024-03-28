@@ -34,16 +34,9 @@
         @submit.prevent="submit"
       >
         <v-card-text>
-          <v-autocomplete
+          <input-asset
             v-model="asset"
             label="Asset"
-            :items="assets"
-            item-text="title"
-            item-value="_id"
-            :rules="[v => !!v || 'Please select an asset']"
-            autocomplete="off"
-            :search-input.sync="searchInput"
-            :loading="searching"
             autofocus
           />
           <v-select
@@ -111,21 +104,9 @@ export default {
   watch: {
     value (value) {
       if (value) {
-        this.searchInput = ''
+        this.asset = null
+        this.$refs.form.resetValidation()
       }
-    },
-    async searchInput (value) {
-      this.assets = await this.$axios.$get('/assets', {
-        params: {
-          q: value,
-          filter: JSON.stringify({
-            state: 'verified',
-            deleted: {
-              $ne: true
-            }
-          })
-        }
-      })
     }
   },
   methods: {

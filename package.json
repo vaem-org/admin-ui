@@ -23,6 +23,7 @@
     "vue-json-tree-view": "^2.1.6",
     "vuetify": "^2.6.6",
     "vuetify-dialog": "^2.0.17",
+    "webvtt-parser": "^2.2.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

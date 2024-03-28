@@ -16,4 +16,4 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export const languages = ['nl', 'en', 'fr', 'de']
+export const languages = Object.freeze(['nl', 'en', 'fr', 'de'])
