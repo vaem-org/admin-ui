@@ -22,7 +22,9 @@
     width="1200"
     :fullscreen="$vuetify.breakpoint.xs"
   >
-    <v-card>
+    <v-card
+      :loading="loading"
+    >
       <v-form
         ref="form"
         v-model="valid"
@@ -194,7 +196,8 @@ export default {
       29.97,
       30
     ],
-    valid: false
+    valid: false,
+    loading: false
   }),
   computed: {
     proxyValue: {
@@ -271,6 +274,7 @@ export default {
       this.$refs.video?.seek?.(cue.startTime)
     },
     async updateSubtitle () {
+      this.loading = true
       this.cues = []
       if (!this.subtitleUrl) {
         return
@@ -279,6 +283,7 @@ export default {
       const parser = new WebVTTParser()
       const tree = parser.parse(await this.$axios.$get(this.subtitleUrl))
       this.cues = tree.cues
+      this.loading = false
     },
     save () {
       if (!this.valid) {
