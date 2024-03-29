@@ -139,7 +139,7 @@
     />
     <dialog-subtitle-edit
       v-model="editAndAssignToAssetDialog"
-      :subtitle-url="editAndAssignToAssetUrl"
+      :url="editAndAssignToAssetUrl"
       @webvtt="saveWebVtt"
     />
     <dialog-advanced-encode

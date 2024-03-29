@@ -78,6 +78,12 @@
       </template>
       <template #contextMenu="{ item }">
         <v-list>
+          <v-list-item
+            v-if="Object.keys(item.subtitles ?? {}).length > 0"
+            @click="editSubtitle(item)"
+          >
+            <v-list-item-title>Edit subtitle</v-list-item-title>
+          </v-list-item>
           <v-list-item @click="infoDialog=true">
             <v-list-item-title>Show info</v-list-item-title>
           </v-list-item>
@@ -176,6 +182,11 @@
       v-model="previewDialog"
       :asset-id="previewAsset"
     />
+    <dialog-subtitle-edit
+      v-model="editSubtitleDialog"
+      :asset="editSubtitleAsset"
+      @webvtt="saveWebVtt"
+    />
   </v-container>
 </template>
 
@@ -228,7 +239,9 @@ export default {
         { text: 'Date', value: 'createdAt' },
         { text: 'Duration', value: 'ffprobe.format.duration' },
         { text: 'Subtitles', value: 'subtitles' }
-      ]
+      ],
+      editSubtitleDialog: false,
+      editSubtitleAsset: null
     }
   },
   head () {
@@ -385,6 +398,14 @@ export default {
       } finally {
         this.exporting = false
       }
+    },
+    editSubtitle (item) {
+      this.editSubtitleAsset = item
+      this.editSubtitleDialog = true
+    },
+    async saveWebVtt ({ webVtt, assetId, language }) {
+      await this.$axios.$put(`/assets/${assetId}/subtitles/${language}/${language}.vtt`, webVtt)
+      this.editSubtitleDialog = false
     }
   }
 }

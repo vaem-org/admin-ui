@@ -45,13 +45,15 @@
                 class="flex-grow-1 overflow-y-auto overflow-x-hidden height"
               >
                 <v-select
+                  v-if="availableLanguages.length > 1"
                   v-model="language"
-                  :items="languages"
+                  :items="availableLanguages"
                   label="Language"
                   filled
                   autofocus
                 />
                 <input-asset
+                  v-if="!asset"
                   v-model="assetId"
                   filled
                   label="Asset"
@@ -59,6 +61,7 @@
                 />
                 <v-responsive
                   :aspect-ratio="16/9"
+                  class="mb-5"
                 >
                   <vaem-player
                     v-if="stream"
@@ -68,19 +71,33 @@
                     :aspect-ratio="16/9"
                   />
                 </v-responsive>
-                <v-checkbox
-                  v-model="changeFramerate"
-                  label="Change framerate"
+                <v-text-field
+                  v-model="delay"
+                  label="Delay (s)"
+                  filled
+                  type="number"
+                />
+                <v-select
+                  v-model="speedAdjustment"
+                  label="Speed adjustment"
+                  :items="speedAdjustmentItems"
+                  filled
                 />
                 <v-slide-y-transition>
-                  <v-row v-if="changeFramerate">
+                  <v-text-field
+                    v-if="speedAdjustment === 'factor'"
+                    v-model="factor"
+                    type="number"
+                    label="Factor"
+                    filled
+                  />
+                  <v-row v-else-if="speedAdjustment === 'framerate'">
                     <v-col>
                       <v-select
                         v-model="sourceFramerate"
                         :items="frameRates"
                         label="Source"
                         filled
-                        :disabled="!changeFramerate"
                       />
                     </v-col>
                     <v-col>
@@ -89,17 +106,10 @@
                         :items="frameRates"
                         label="Destination"
                         filled
-                        :disabled="!changeFramerate"
                       />
                     </v-col>
                   </v-row>
                 </v-slide-y-transition>
-                <v-text-field
-                  v-model="delay"
-                  label="Delay (s)"
-                  filled
-                  type="number"
-                />
               </div>
             </v-col>
             <v-col class="d-flex flex-column">
@@ -127,7 +137,7 @@
                         {{ cue.endTime | duration }}
                       </td>
                       <td>
-                        {{ cue.text }}
+                        <pre v-text="cue.text" />
                       </td>
                     </tr>
                   </tbody>
@@ -147,6 +157,8 @@
           <v-btn
             color="primary"
             type="submit"
+            :loading="saving"
+            :disabled="saving || !valid"
           >
             Save
           </v-btn>
@@ -168,37 +180,52 @@ export default {
   },
   props: {
     value: Boolean,
-    subtitleUrl: {
+    url: {
       type: String,
       default: null
     },
-    title: String
-  },
-  data: () => ({
-    columnStyle: {
-      height: '82vh'
+    title: {
+      type: String,
+      default: null
     },
-    language: languages[0],
-    languages,
-    assetId: null,
-    stream: null,
-    textTrack: null,
-    cues: [],
-    delay: 0,
-    speed: 1,
-    sourceFramerate: 25,
-    destinationFramerate: 25,
-    changeFramerate: false,
-    frameRates: [
-      23.976,
-      24,
-      25,
-      29.97,
-      30
-    ],
-    valid: false,
-    loading: false
-  }),
+    asset: {
+      type: Object,
+      default: null
+    }
+  },
+  data () {
+    return {
+      columnStyle: {
+        height: '82vh'
+      },
+      language: languages[0],
+      languages,
+      assetId: this.asset?._id ?? null,
+      stream: null,
+      textTrack: null,
+      cues: [],
+      delay: 0,
+      factor: 1,
+      sourceFramerate: 25,
+      destinationFramerate: 25,
+      frameRates: [
+        23.976,
+        24,
+        25,
+        29.97,
+        30
+      ],
+      valid: false,
+      loading: false,
+      saving: false,
+      speedAdjustment: null,
+      speedAdjustmentItems: [
+        { text: 'None', value: null },
+        { text: 'Change framerate', value: 'framerate' },
+        { text: 'By a factor', value: 'factor' }
+      ]
+    }
+  },
   computed: {
     proxyValue: {
       get () {
@@ -214,9 +241,12 @@ export default {
         delay = 0
       }
 
-      const speed = this.changeFramerate
-        ? (this.sourceFramerate / this.destinationFramerate)
-        : 1
+      let factor = 1
+      if (this.speedAdjustment === 'framerate') {
+        factor = (this.sourceFramerate / this.destinationFramerate)
+      } else if (this.speedAdjustment === 'factor') {
+        factor = this.factor
+      }
 
       return this.cues
         .map(({
@@ -226,8 +256,8 @@ export default {
         }) => {
           return {
             ...cue,
-            startTime: startTime * speed + delay,
-            endTime: endTime * speed + delay
+            startTime: startTime * factor + delay,
+            endTime: endTime * factor + delay
           }
         })
     },
@@ -245,9 +275,44 @@ export default {
           srclang: 'nl'
         }
       ]
+    },
+
+    subtitleUrl () {
+      if (!this.asset) {
+        return this.url
+      }
+
+      return this.stream?.subtitles?.[this.language]
+    },
+
+    availableLanguages () {
+      return this.asset
+        ? Object.entries(this.asset.subtitles ?? {})
+          .filter(([, enabled]) => enabled)
+          .map(([language]) => language)
+        : languages
     }
   },
   watch: {
+    value (value) {
+      if (value) {
+        this.saving = false
+        this.speedAdjustment = null
+        this.factor = 1
+        this.sourceFramerate = 25
+        this.destinationFramerate = 25
+        this.$refs.form?.resetValidation?.()
+        this.updateSubtitle()
+      }
+    },
+    asset: {
+      async handler () {
+        this.stream = this.asset
+          ? await this.$axios.$get(`/assets/${this.asset._id}/stream`)
+          : null
+      },
+      immediate: true
+    },
     assetId: {
       async handler () {
         this.stream = this.assetId
@@ -261,6 +326,11 @@ export default {
         return this.updateSubtitle()
       },
       immediate: true
+    },
+    availableLanguages (languages) {
+      if (!this.language || !languages.includes(languages)) {
+        this.language = languages[0]
+      }
     }
   },
   created () {
@@ -274,15 +344,44 @@ export default {
       this.$refs.video?.seek?.(cue.startTime)
     },
     async updateSubtitle () {
-      this.loading = true
-      this.cues = []
       if (!this.subtitleUrl) {
         return
       }
 
+      this.loading = true
+      this.cues = []
+
+      // remove <c> nodes
+      const cleanup = (nodes) => {
+        return nodes.flatMap(({
+          children,
+          ...node
+        }) => node.name === 'c'
+          ? children
+          : [
+              {
+                ...node,
+                ...children && {
+                  children: cleanup(children)
+                }
+              }
+            ])
+      }
+
       const parser = new WebVTTParser()
-      const tree = parser.parse(await this.$axios.$get(this.subtitleUrl))
-      this.cues = tree.cues
+      try {
+        const tree = parser.parse(await this.$axios.$get(this.subtitleUrl))
+        this.cues = tree.cues.map(({ text, tree, ...cue }) => ({
+          ...cue,
+          text: (text ?? '').replace(/<c.*?>|<\/c>/g, ''),
+          tree: cleanup([tree])[0]
+        }))
+      } catch (e) {
+        this.$store.commit('flash/setMessage', {
+          message: 'An error occurred trying to open subtitle file',
+          color: 'error'
+        })
+      }
       this.loading = false
     },
     save () {
@@ -290,9 +389,11 @@ export default {
         return
       }
 
+      this.saving = true
+
       this.$emit('webvtt', {
         webVtt: this.webVtt,
-        assetId: this.assetId,
+        assetId: this.asset?._id ?? this.assetId,
         language: this.language
       })
     }

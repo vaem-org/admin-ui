@@ -105,7 +105,7 @@ export default {
     value (value) {
       if (value) {
         this.asset = null
-        this.$refs.form.resetValidation()
+        this.$refs.form?.resetValidation?.()
       }
     }
   },
