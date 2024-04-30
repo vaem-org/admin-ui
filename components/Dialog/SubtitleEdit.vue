@@ -64,7 +64,7 @@
                   class="mb-5"
                 >
                   <vaem-player
-                    v-if="stream"
+                    v-if="stream && proxyValue"
                     ref="video"
                     :src="stream.stream"
                     :text-tracks="textTracks"
@@ -110,6 +110,7 @@
                     </v-col>
                   </v-row>
                 </v-slide-y-transition>
+                <pre>{{ [...deleteLines] }}</pre>
               </div>
             </v-col>
             <v-col class="d-flex flex-column">
@@ -122,6 +123,7 @@
                       <th>Start</th>
                       <th>End</th>
                       <th>Text</th>
+                      <td />
                     </tr>
                   </thead>
                   <tbody>
@@ -138,6 +140,18 @@
                       </td>
                       <td>
                         <pre v-text="cue.text" />
+                      </td>
+                      <td>
+                        <div class="actions">
+                          {{ i }}
+                          <v-btn
+                            v-if="!deleteLines.has(i)"
+                            icon
+                            @click="deleteLines.add(i)"
+                          >
+                            <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -223,7 +237,8 @@ export default {
         { text: 'None', value: null },
         { text: 'Change framerate', value: 'framerate' },
         { text: 'By a factor', value: 'factor' }
-      ]
+      ],
+      deleteLines: new Set()
     }
   },
   computed: {
@@ -404,5 +419,14 @@ export default {
 <style scoped>
 .height {
   height: 76vh;
+}
+
+.actions {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+tr:hover .actions {
+  opacity: 1;
 }
 </style>
