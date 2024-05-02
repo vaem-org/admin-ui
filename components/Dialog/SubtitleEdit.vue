@@ -110,7 +110,6 @@
                     </v-col>
                   </v-row>
                 </v-slide-y-transition>
-                <pre>{{ [...deleteLines] }}</pre>
               </div>
             </v-col>
             <v-col class="d-flex flex-column">
@@ -130,6 +129,7 @@
                     <tr
                       v-for="(cue, i) of modifiedCues"
                       :key="i"
+                      :class="{ deleted: deleteLines.includes(i) }"
                       @click="navigate(cue)"
                     >
                       <td>
@@ -143,13 +143,19 @@
                       </td>
                       <td>
                         <div class="actions">
-                          {{ i }}
                           <v-btn
-                            v-if="!deleteLines.has(i)"
+                            v-if="!deleteLines.includes(i)"
                             icon
-                            @click="deleteLines.add(i)"
+                            @click.native.prevent="deleteLine(i)"
                           >
                             <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                          <v-btn
+                            v-else
+                            icon
+                            @click.native.prevent="undeleteLine(i)"
+                          >
+                            <v-icon>mdi-undo</v-icon>
                           </v-btn>
                         </div>
                       </td>
@@ -238,7 +244,7 @@ export default {
         { text: 'Change framerate', value: 'framerate' },
         { text: 'By a factor', value: 'factor' }
       ],
-      deleteLines: new Set()
+      deleteLines: []
     }
   },
   computed: {
@@ -278,7 +284,10 @@ export default {
     },
     webVtt () {
       const serializer = new WebVTTSerializer()
-      return serializer.serialize(structuredClone(this.modifiedCues))
+      return serializer.serialize(structuredClone(
+        this.modifiedCues
+          .filter((_, index) => !this.deleteLines.includes(index))
+      ))
     },
     textTracks () {
       return [
@@ -411,6 +420,15 @@ export default {
         assetId: this.asset?._id ?? this.assetId,
         language: this.language
       })
+    },
+    deleteLine (index) {
+      this.deleteLines = [
+        ...this.deleteLines,
+        index
+      ]
+    },
+    undeleteLine (index) {
+      this.deleteLines = this.deleteLines.filter(v => v !== index)
     }
   }
 }
@@ -428,5 +446,10 @@ export default {
 
 tr:hover .actions {
   opacity: 1;
+}
+
+tr.deleted td,
+tr.deleted th {
+  text-decoration: line-through;
 }
 </style>
