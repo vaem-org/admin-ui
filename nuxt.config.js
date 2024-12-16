@@ -45,7 +45,8 @@ export default {
       browserBaseURL: process.env.API_URL
     },
     apiUrl: process.env.API_URL,
-    embedUrl: process.env.EMBED_URL
+    embedUrl: process.env.EMBED_URL,
+    skipAuth: process.env.SKIP_AUTH === '1'
   },
   privateRuntimeConfig: {
     axios: {
@@ -138,7 +139,7 @@ export default {
   },
 
   router: {
-    middleware: ['auth'],
+    middleware: process.env.SKIP_AUTH === '1' ? ['skip-auth'] : ['auth'],
     base: process.env.BASE ?? '/'
   }
 }

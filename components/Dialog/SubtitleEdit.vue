@@ -109,6 +109,30 @@
                       />
                     </v-col>
                   </v-row>
+                  <div v-else-if="speedAdjustment === 'manual'">
+                    <v-row
+                      v-for="index of Object.keys(manual)"
+                      :key="`manual${index}`"
+                    >
+                      <v-col>
+                        <v-text-field
+                          v-model="manual[index].index"
+                          type="number"
+                          :label="`Index ${1 + parseInt(index)}`"
+                          outlined
+                          persistent-hint
+                          :hint="cues[manual[index].index] && cues[manual[index].index].text"
+                        />
+                      </v-col>
+                      <v-col>
+                        <input-time
+                          v-model="manual[index].destination"
+                          label="Time"
+                          outlined
+                        />
+                      </v-col>
+                    </v-row>
+                  </div>
                 </v-slide-y-transition>
               </div>
             </v-col>
@@ -116,52 +140,86 @@
               <div
                 class="flex-grow-1 overflow-y-auto height"
               >
-                <v-simple-table>
-                  <thead>
-                    <tr>
-                      <th>Start</th>
-                      <th>End</th>
-                      <th>Text</th>
-                      <td />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(cue, i) of modifiedCues"
-                      :key="i"
-                      :class="{ deleted: deleteLines.includes(i) }"
-                      @click="navigate(cue)"
+                <v-data-table
+                  :headers="cueHeaders"
+                  :items="modifiedCues"
+                  :options.sync="cueOptions"
+                  class="cues"
+                  hide-default-footer
+                  @click:row="navigate"
+                >
+                  <template #[`item.startTime`]="{ item }">
+                    {{ item.startTime | duration }}
+                  </template>
+                  <template #[`item.endTime`]="{ item }">
+                    {{ item.endTime | duration }}
+                  </template>
+                  <template #[`item.actions`]="{ index }">
+                    <v-btn
+                      v-if="!deleteLines.includes(index)"
+                      icon
+                      @click.native.prevent="deleteLine(index)"
                     >
-                      <td>
-                        {{ cue.startTime | duration }}
-                      </td>
-                      <td>
-                        {{ cue.endTime | duration }}
-                      </td>
-                      <td>
-                        <pre v-text="cue.text" />
-                      </td>
-                      <td>
-                        <div class="actions">
-                          <v-btn
-                            v-if="!deleteLines.includes(i)"
-                            icon
-                            @click.native.prevent="deleteLine(i)"
-                          >
-                            <v-icon>mdi-delete</v-icon>
-                          </v-btn>
-                          <v-btn
-                            v-else
-                            icon
-                            @click.native.prevent="undeleteLine(i)"
-                          >
-                            <v-icon>mdi-undo</v-icon>
-                          </v-btn>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-simple-table>
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                    <v-btn
+                      v-else
+                      icon
+                      @click.native.prevent="undeleteLine(index)"
+                    >
+                      <v-icon>mdi-undo</v-icon>
+                    </v-btn>
+                  </template>
+                </v-data-table>
+                <v-toolbar
+                  elevation="0"
+                  color="transparent"
+                >
+                  <v-spacer />
+                  <span class="mr-10">
+                    {{ (cueOptions.page - 1) * cueOptions.itemsPerPage + 1 }}-{{ cueOptions.page * cueOptions.itemsPerPage }} of {{ cues.length }}
+                  </span>
+                  <v-btn
+                    icon
+                    small
+                    :disabled="cueOptions.page === 1"
+                    @click="cueOptions.page = 1"
+                  >
+                    <v-icon>
+                      mdi-page-first
+                    </v-icon>
+                  </v-btn>
+                  <v-btn
+                    icon
+                    small
+                    :disabled="cueOptions.page === 1"
+                    @click="cueOptions.page = cueOptions.page - 1"
+                  >
+                    <v-icon>
+                      mdi-chevron-left
+                    </v-icon>
+                  </v-btn>
+                  <v-btn
+                    icon
+                    small
+                    :disabled="cueOptions.page === numPages"
+                    @click="cueOptions.page = cueOptions.page + 1"
+                  >
+                    <v-icon>
+                      mdi-chevron-right
+                    </v-icon>
+                  </v-btn>
+                  <v-btn
+                    icon
+                    small
+                    :disabled="cueOptions.page === numPages"
+                    @click="cueOptions.page = numPages"
+                  >
+                    <v-icon>
+                      mdi-page-last
+                    </v-icon>
+                  </v-btn>
+                </v-toolbar>
               </div>
             </v-col>
           </v-row>
@@ -192,6 +250,7 @@
 import VaemPlayer from '@vaem/player'
 import { WebVTTParser, WebVTTSerializer } from 'webvtt-parser'
 import { languages } from 'assets/defaults'
+import debounce from 'lodash/debounce'
 
 export default {
   name: 'DialogSubtitleEdit',
@@ -211,6 +270,10 @@ export default {
     asset: {
       type: Object,
       default: null
+    },
+    initialSettings: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
@@ -224,10 +287,10 @@ export default {
       stream: null,
       textTrack: null,
       cues: [],
-      delay: 0,
-      factor: 1,
-      sourceFramerate: 25,
-      destinationFramerate: 25,
+      delay: this.initialSettings.delay ?? 0,
+      factor: this.initialSettings.factor ?? 1,
+      sourceFramerate: this.initialSettings.sourceFramerate ?? 25,
+      destinationFramerate: this.initialSettings.destinationFramerate ?? 25,
       frameRates: [
         23.976,
         24,
@@ -238,13 +301,32 @@ export default {
       valid: false,
       loading: false,
       saving: false,
-      speedAdjustment: null,
+      speedAdjustment: this.initialSettings.speedAdjustment ?? null,
       speedAdjustmentItems: [
         { text: 'None', value: null },
         { text: 'Change framerate', value: 'framerate' },
-        { text: 'By a factor', value: 'factor' }
+        { text: 'By a factor', value: 'factor' },
+        { text: 'Manually', value: 'manual' }
       ],
-      deleteLines: []
+      deleteLines: [],
+      manual: [
+        {
+          index: 0,
+          destination: '00:00:00'
+        },
+        {
+          index: 0,
+          destination: '00:00:00'
+        }
+      ],
+      webVtt: '',
+      cueHeaders: [
+        { text: 'Start', value: 'startTime' },
+        { text: 'End', value: 'endTime' },
+        { text: 'Text', value: 'text' },
+        { value: 'actions' }
+      ],
+      cueOptions: {}
     }
   },
   computed: {
@@ -262,11 +344,31 @@ export default {
         delay = 0
       }
 
+      const toSeconds = (value) => {
+        let multiplier = 1
+        let result = 0
+        for (const segment of value.split(':').filter(Boolean).reverse()) {
+          result = result + parseInt(segment) * multiplier
+          multiplier = multiplier * 60
+        }
+
+        return result
+      }
+
       let factor = 1
       if (this.speedAdjustment === 'framerate') {
         factor = (this.sourceFramerate / this.destinationFramerate)
       } else if (this.speedAdjustment === 'factor') {
         factor = this.factor
+      } else if (this.speedAdjustment === 'manual') {
+        const s1 = this.cues[this.manual[0].index]?.startTime ?? 0
+        const s2 = this.cues[this.manual[1].index]?.startTime ?? 1
+
+        const d1 = toSeconds(this.manual[0].destination) || s1
+        const d2 = toSeconds(this.manual[1].destination) || s2
+
+        factor = (d1 - d2) / (s1 - s2)
+        delay = d1 - s1 * (d1 - d2) / (s1 - s2)
       }
 
       return this.cues
@@ -282,13 +384,6 @@ export default {
           }
         })
     },
-    webVtt () {
-      const serializer = new WebVTTSerializer()
-      return serializer.serialize(structuredClone(
-        this.modifiedCues
-          .filter((_, index) => !this.deleteLines.includes(index))
-      ))
-    },
     textTracks () {
       return [
         {
@@ -302,7 +397,7 @@ export default {
     },
 
     subtitleUrl () {
-      if (!this.asset) {
+      if (!this.asset || this.url) {
         return this.url
       }
 
@@ -315,12 +410,17 @@ export default {
           .filter(([, enabled]) => enabled)
           .map(([language]) => language)
         : languages
+    },
+
+    numPages () {
+      return Math.ceil(this.cues.length / this.cueOptions.itemsPerPage)
     }
   },
   watch: {
     value (value) {
       if (value) {
         this.saving = false
+        this.delay = 0
         this.speedAdjustment = null
         this.factor = 1
         this.sourceFramerate = 25
@@ -355,7 +455,13 @@ export default {
       if (!this.language || !languages.includes(languages)) {
         this.language = languages[0]
       }
-    }
+    },
+    delay () {
+      return this.updateSubtitle()
+    },
+    modifiedCues: debounce(function () {
+      this.updateWebVtt()
+    }, 500)
   },
   created () {
     this.serializer = new WebVTTSerializer()
@@ -365,7 +471,7 @@ export default {
   },
   methods: {
     navigate (cue) {
-      this.$refs.video?.seek?.(cue.startTime)
+      this.$refs.video?.seek?.(Math.max(0, cue.startTime - 2))
     },
     async updateSubtitle () {
       if (!this.subtitleUrl) {
@@ -406,7 +512,9 @@ export default {
           color: 'error'
         })
       }
+      this.manual[1].index = this.cues.length - 1
       this.loading = false
+      this.updateWebVtt()
     },
     save () {
       if (!this.valid) {
@@ -429,6 +537,13 @@ export default {
     },
     undeleteLine (index) {
       this.deleteLines = this.deleteLines.filter(v => v !== index)
+    },
+    updateWebVtt () {
+      const serializer = new WebVTTSerializer()
+      this.webVtt = serializer.serialize(structuredClone(
+        this.modifiedCues
+          .filter((_, index) => !this.deleteLines.includes(index))
+      ))
     }
   }
 }
