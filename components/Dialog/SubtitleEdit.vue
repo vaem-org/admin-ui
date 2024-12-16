@@ -71,18 +71,21 @@
                     :aspect-ratio="16/9"
                   />
                 </v-responsive>
-                <v-text-field
-                  v-model="delay"
-                  label="Delay (s)"
-                  filled
-                  type="number"
-                />
                 <v-select
                   v-model="speedAdjustment"
                   label="Speed adjustment"
                   :items="speedAdjustmentItems"
                   filled
                 />
+                <v-slide-y-transition>
+                  <v-text-field
+                    v-if="speedAdjustment !== 'manual'"
+                    v-model="delay"
+                    label="Delay (s)"
+                    filled
+                    type="number"
+                  />
+                </v-slide-y-transition>
                 <v-slide-y-transition>
                   <v-text-field
                     v-if="speedAdjustment === 'factor'"
@@ -116,12 +119,15 @@
                     >
                       <v-col>
                         <v-text-field
+                          ref="manualIndex"
                           v-model="manual[index].index"
                           type="number"
                           :label="`Index ${1 + parseInt(index)}`"
                           outlined
                           persistent-hint
                           :hint="cues[manual[index].index] && cues[manual[index].index].text"
+                          @focus="manualFocus = index"
+                          @blur="resetFocus"
                         />
                       </v-col>
                       <v-col>
@@ -252,6 +258,16 @@ import { WebVTTParser, WebVTTSerializer } from 'webvtt-parser'
 import { languages } from 'assets/defaults'
 import debounce from 'lodash/debounce'
 
+const toString = (seconds) => {
+  return [
+    Math.floor(seconds / 3600),
+    Math.floor(seconds / 60) % 60,
+    Math.floor(seconds % 60)
+  ]
+    .map(v => v.toString().padStart(2, '0'))
+    .join(':')
+}
+
 export default {
   name: 'DialogSubtitleEdit',
   components: {
@@ -326,7 +342,8 @@ export default {
         { text: 'Text', value: 'text' },
         { value: 'actions' }
       ],
-      cueOptions: {}
+      cueOptions: {},
+      manualFocus: null
     }
   },
   computed: {
@@ -470,7 +487,16 @@ export default {
     delete this.serializer
   },
   methods: {
-    navigate (cue) {
+    navigate (cue, data) {
+      if (this.manualFocus) {
+        const index = this.manualFocus
+        this.manual[index].index = data.index + (this.cueOptions.page - 1) * this.cueOptions.itemsPerPage
+        this.manual[index].destination = toString(this.modifiedCues[data.index].startTime)
+        setTimeout(() => {
+          this.$refs.manualIndex[index]?.focus?.()
+        }, 100)
+        return
+      }
       this.$refs.video?.seek?.(Math.max(0, cue.startTime - 2))
     },
     async updateSubtitle () {
@@ -501,8 +527,9 @@ export default {
       const parser = new WebVTTParser()
       try {
         const tree = parser.parse(await this.$axios.$get(this.subtitleUrl))
-        this.cues = tree.cues.map(({ text, tree, ...cue }) => ({
+        this.cues = tree.cues.map(({ text, tree, ...cue }, index) => ({
           ...cue,
+          id: index,
           text: (text ?? '').replace(/<c.*?>|<\/c>/g, ''),
           tree: cleanup([tree])[0]
         }))
@@ -512,7 +539,11 @@ export default {
           color: 'error'
         })
       }
-      this.manual[1].index = this.cues.length - 1
+
+      this.manual[0].destination = toString(this.cues[0].startTime)
+      const lastIndex = this.cues.length - 1
+      this.manual[1].destination = toString(this.cues[lastIndex]?.startTime)
+      this.manual[1].index = lastIndex
       this.loading = false
       this.updateWebVtt()
     },
@@ -544,6 +575,11 @@ export default {
         this.modifiedCues
           .filter((_, index) => !this.deleteLines.includes(index))
       ))
+    },
+    resetFocus () {
+      setTimeout(() => {
+        this.manualFocus = null
+      }, 100)
     }
   }
 }
