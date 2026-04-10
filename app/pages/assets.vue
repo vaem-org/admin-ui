@@ -23,10 +23,12 @@ import dayjs from 'dayjs'
 import type { ComponentExposed } from 'vue-component-type-helpers'
 import type { CItemList } from '#components'
 import { useRouteQuery } from '@vueuse/router'
+import { FetchError } from 'ofetch'
 
 const api = useAPI()
 const confirm = useConfirm()
 const sign = useSign()
+const snackbarStore = useSnackbarStore()
 
 const itemsRef = useTemplateRef<ComponentExposed<typeof CItemList<Asset>>>('items')
 const selected = ref<Asset[]>([])
@@ -43,7 +45,7 @@ const filter = computed<Record<string, unknown> | undefined>(() => labels.value.
 
 const availableLabels = await api<string[]>('assets/distinct/labels')
 
-const headers: DataTableHeader<Asset>[] = [
+const headers: DataTableHeader[] = [
   {
     title: '',
     value: 'actions',
@@ -257,19 +259,30 @@ function showInfo(item: Asset) {
   selectedItem.value = item
 }
 
-async function saveWebVtt({ webVtt, assetId, language }: {
+const savingSubtitle = ref(false)
+async function saveSubtitle({ webVtt, assetId, language }: {
   webVtt: string
   assetId: string
   language: string
 }) {
-  await api(`assets/${assetId}/subtitles/${language}/${language}.vtt`, {
-    method: 'PUT',
-    body: webVtt,
-    headers: {
-      'content-type': 'text/vtt',
-    },
-  })
-  editSubtitleDialog.value = false
+  savingSubtitle.value = true
+  try {
+    await api(`assets/${assetId}/subtitles/${language}/${language}.vtt`, {
+      method: 'PUT',
+      body: webVtt,
+      headers: {
+        'content-type': 'text/vtt',
+      },
+    })
+    editSubtitleDialog.value = false
+  }
+  catch (e) {
+    const message = e instanceof FetchError
+      ? e.response?._data?.message
+      : undefined
+    snackbarStore.setError(message ?? 'An error occurred')
+  }
+  savingSubtitle.value = false
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined
@@ -448,7 +461,8 @@ async function refresh() {
     <dialog-subtitle-edit
       v-model="editSubtitleDialog"
       :asset="selectedItem"
-      @webvtt="saveWebVtt"
+      :saving="savingSubtitle"
+      @save="saveSubtitle"
     />
     <dialog-player
       v-if="selectedItem"

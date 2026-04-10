@@ -44,12 +44,13 @@ const props = defineProps<{
   url?: string
   title?: string
   asset?: Asset
+  saving?: boolean
 }>()
 
 const emit = defineEmits<{
-  webvtt: [{
+  save: [{
     webVtt: string
-    assetId: string | undefined
+    assetId: string
     language: string
   }]
 }>()
@@ -59,9 +60,8 @@ const snackbarStore = useSnackbarStore()
 const { xs } = useDisplay()
 
 const videoRef = useTemplateRef<InstanceType<typeof VaemPlayer>>('video')
-const manualIndexRefs = useTemplateRefsList<InstanceType<typeof VTextField>>()
 const language = ref<string | undefined>(languages[0])
-const assetId = props.asset?._id
+const assetId = ref<string | null>(props.asset?._id ?? null)
 const stream = ref<StreamInfo>()
 const cues = ref<Cue[]>([])
 const delay = ref<number>(0)
@@ -77,11 +77,10 @@ const frameRates = [
 ]
 const valid = ref(false)
 const loading = ref(false)
-const saving = ref(false)
 type SpeedAdjustment = 'framerate' | 'factor' | 'manual'
 const speedAdjustment = ref<SpeedAdjustment>()
-const speedAdjustmentItems: { title: string, value: SpeedAdjustment | undefined }[] = [
-  { title: 'None', value: undefined },
+const speedAdjustmentItems: { title: string, value: SpeedAdjustment | null }[] = [
+  { title: 'None', value: null },
   { title: 'Change framerate', value: 'framerate' },
   { title: 'By a factor', value: 'factor' },
   { title: 'Manually', value: 'manual' },
@@ -111,10 +110,6 @@ const cueHeaders: DataTableHeader[] = [
   { value: 'actions' },
 ]
 
-const manualFocus = ref<{
-  index: 0 | 1
-}>()
-
 const modifiedCues = computed(() => {
   let _delay = delay.value
   if (Number.isNaN(_delay)) {
@@ -124,7 +119,7 @@ const modifiedCues = computed(() => {
   const toSeconds = (value: string): number => {
     let multiplier = 1
     let result = 0
-    for (const segment of value.split(':').filter(Boolean).reverse()) {
+    for (const segment of (value.match(/\d{2}/g) ?? []).filter(Boolean).reverse()) {
       result = result + parseInt(segment) * multiplier
       multiplier = multiplier * 60
     }
@@ -204,7 +199,6 @@ watch(model, (value) => {
     return
   }
 
-  saving.value = false
   delay.value = 0
   speedAdjustment.value = undefined
   factor.value = 1
@@ -213,16 +207,10 @@ watch(model, (value) => {
   updateSubtitle()
 })
 
-watch(() => props.asset, async () => {
-  stream.value = props.asset
-    ? await api<StreamInfo>(`assets/${props.asset._id}/stream`)
-    : undefined
-}, {
-  immediate: true,
-})
+const selectedAssetId = computed(() => props.asset?._id ?? assetId.value)
 
-watch(() => assetId, async (value) => {
-  stream.value = assetId
+watch(selectedAssetId, async (value) => {
+  stream.value = value
     ? await api<StreamInfo>(`assets/${value}/stream`)
     : undefined
 }, {
@@ -252,15 +240,6 @@ watchDebounced(modifiedCues, () => {
 })
 
 function navigate(_event: Event, data: { item: VTTCue, index: number }) {
-  if (manualFocus.value) {
-    const { index } = manualFocus.value
-    manual.value[index].index = data.index + (page.value - 1) * itemsPerPage.value
-    manual.value[index].destination = toString(modifiedCues.value[data.index]?.startTime ?? 0)
-    setTimeout(() => {
-      manualIndexRefs.value[index]?.focus?.()
-    }, 100)
-    return
-  }
   const seekTime = Math.max(0, data.item.startTime - 2)
   videoRef.value?.seek?.(seekTime)
 }
@@ -291,7 +270,7 @@ async function updateSubtitle() {
 
   const parser = new WebVTTParser()
   try {
-    const tree = parser.parse(await $fetch(subtitleUrl.value))
+    const tree = parser.parse(await api(subtitleUrl.value))
     cues.value = tree.cues.map(({ text, tree, ...cue }, index) => ({
       ...cue,
       id: index.toString(),
@@ -301,7 +280,8 @@ async function updateSubtitle() {
       },
     }))
   }
-  catch (_e) {
+  catch (e) {
+    console.error(e)
     snackbarStore.setError('An error occurred trying to open subtitle file')
   }
 
@@ -317,15 +297,15 @@ async function updateSubtitle() {
 }
 
 async function submit(validate: SubmitEventPromise) {
-  if (!(await validate).valid) {
+  const assetId1 = props.asset?._id ?? assetId.value
+
+  if (!(await validate).valid || !assetId1) {
     return
   }
 
-  saving.value = true
-
-  emit('webvtt', {
+  emit('save', {
     webVtt: webVtt.value,
-    assetId: props.asset?._id ?? assetId,
+    assetId: assetId1,
     language: language.value ?? 'en',
   })
 }
@@ -347,12 +327,6 @@ function updateWebVtt() {
     .filter((_, index) => !deleteLines.value.includes(index)),
   )
 }
-
-function resetFocus() {
-  setTimeout(() => {
-    manualFocus.value = undefined
-  }, 100)
-}
 </script>
 
 <template>
@@ -367,6 +341,7 @@ function resetFocus() {
       <v-form
         ref="form"
         v-model="valid"
+        validate-on="lazy submit"
         @submit.prevent="submit"
       >
         <v-card-title>
@@ -417,21 +392,23 @@ function resetFocus() {
                   filled
                 />
                 <v-slide-y-transition>
-                  <v-text-field
+                  <v-number-input
                     v-if="speedAdjustment !== 'manual'"
                     v-model="delay"
                     label="Delay (s)"
                     filled
                     type="number"
+                    :precision="null"
                   />
                 </v-slide-y-transition>
                 <v-slide-y-transition>
-                  <v-text-field
+                  <v-number-input
                     v-if="speedAdjustment === 'factor'"
                     v-model="factor"
                     type="number"
                     label="Factor"
                     filled
+                    :precision="null"
                   />
                   <v-row v-else-if="speedAdjustment === 'framerate'">
                     <v-col>
@@ -453,25 +430,22 @@ function resetFocus() {
                   </v-row>
                   <div v-else-if="speedAdjustment === 'manual'">
                     <v-row
-                      v-for="index of Object.keys(manual)"
+                      v-for="(item, index) of manual"
                       :key="`manual${index}`"
                     >
                       <v-col>
                         <v-text-field
-                          :ref="manualIndexRefs.set"
-                          v-model="manual[index].index"
+                          v-model="item.index"
                           type="number"
-                          :label="`Index ${1 + parseInt(index)}`"
+                          :label="`Index ${1 + index}`"
                           outlined
                           persistent-hint
-                          :hint="cues[manual[index].index] && cues[manual[index].index].text"
-                          @focus="manualFocus = index"
-                          @blur="resetFocus"
+                          :hint="cues[item.index] && cues[item.index]?.text"
                         />
                       </v-col>
                       <v-col>
                         <input-time
-                          v-model="manual[index].destination"
+                          v-model="item.destination"
                           label="Time"
                           outlined
                         />
@@ -582,7 +556,7 @@ function resetFocus() {
             color="primary"
             type="submit"
             :loading="saving"
-            :disabled="saving || !valid"
+            :disabled="saving"
           >
             Save
           </v-btn>

@@ -34,10 +34,10 @@ export function useAPI() {
         }
       },
       async onResponse({ response: { status } }) {
-        if (status === 401) {
+        if (status === 401 && authStore.token) {
           authStore.logout()
           sessionStorage.setItem('redirectTo', router.currentRoute.value.fullPath)
-          await router.push('/')
+          location.reload()
         }
       },
     })

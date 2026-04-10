@@ -22,3 +22,4 @@ logs
 .env.*
 !.env.example
 /app/pages/sandbox.vue
+/sandbox.ts

@@ -192,19 +192,31 @@ async function download(item?: FileItem) {
   location.href = await sign(`files/${item._id}/download`)
 }
 
-async function saveWebVtt({ webVtt, assetId, language }: {
+const savingSubtitle = ref(false)
+async function saveSubtitle({ webVtt, assetId, language }: {
   webVtt: string
   assetId: string
   language: string
 }) {
-  await api(`assets/${assetId}/subtitles/${language}/${language}.vtt`, {
-    method: 'PUT',
-    body: webVtt,
-    headers: {
-      'content-type': 'text/vtt',
-    },
-  })
-  editAndAssignToAssetDialog.value = false
+  savingSubtitle.value = true
+  try {
+    await api(`assets/${assetId}/subtitles/${language}/${language}.vtt`, {
+      method: 'PUT',
+      body: webVtt,
+      headers: {
+        'content-type': 'text/vtt',
+      },
+    })
+    editAndAssignToAssetDialog.value = false
+  }
+  catch (e) {
+    console.error(e)
+    const message = e instanceof FetchError
+      ? e.response?._data?.message
+      : undefined
+    snackbarStore.setError(message ?? 'An error occurred')
+  }
+  savingSubtitle.value = false
 }
 
 const queue: {
@@ -478,7 +490,8 @@ function onDrop(event: DragEvent) {
     <dialog-subtitle-edit
       v-model="editAndAssignToAssetDialog"
       :url="editAndAssignToAssetUrl"
-      @webvtt="saveWebVtt"
+      :saving="savingSubtitle"
+      @save="saveSubtitle"
     />
     <v-dialog
       v-model="ffprobeDialog"
