@@ -50,7 +50,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function getRedirectUri(): string {
-    return new URL('/login', window.origin + config.app.baseURL).toString()
+    return new URL(
+      config.app.baseURL.replace(/\/$/, '') + '/login',
+      window.origin,
+    ).toString()
   }
 
   return {

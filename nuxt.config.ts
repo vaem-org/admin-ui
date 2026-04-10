@@ -32,6 +32,9 @@ export default defineNuxtConfig({
       embedUrl: '',
     },
   },
+  experimental: {
+    payloadExtraction: 'client',
+  },
   compatibilityDate: '2025-07-15',
   vite: {
     optimizeDeps: {
