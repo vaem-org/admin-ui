@@ -24,7 +24,7 @@ export const useSign = () => {
     return new URL(await api<string>('sign', {
       method: 'POST',
       body: {
-        url,
+        url: '/' + url,
       },
     }), config.apiUrl).toString()
   }

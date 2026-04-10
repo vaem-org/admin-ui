@@ -189,7 +189,7 @@ async function updateThumbnail() {
     thumbnail.value = undefined
     return
   }
-  thumbnail.value = await sign(`/assets/${item.value._id}/thumbnail/0.png`)
+  thumbnail.value = await sign(`assets/${item.value._id}/thumbnail/0.png`)
 }
 </script>
 

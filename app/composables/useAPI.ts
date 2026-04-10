@@ -33,12 +33,10 @@ export function useAPI() {
           options.headers.set('Authorization', `Bearer ${authStore.token}`)
         }
       },
-      async onResponse({ response: { _data, status } }) {
-        if (status === 401
-          && _data?.message === 'TokenExpiredError'
-        ) {
+      async onResponse({ response: { status } }) {
+        if (status === 401) {
           authStore.logout()
-          sessionStorage.setItem('redirecTo', router.currentRoute.value.fullPath)
+          sessionStorage.setItem('redirectTo', router.currentRoute.value.fullPath)
           await router.push('/')
         }
       },

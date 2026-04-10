@@ -108,7 +108,7 @@ async function download(item?: Asset) {
   if (!item) {
     return
   }
-  location.href = await sign(`/assets/${item._id}/download`)
+  location.href = await sign(`assets/${item._id}/download`)
 }
 
 const shareAssetDialog = ref(false)
@@ -232,14 +232,10 @@ function onSaved() {
 }
 
 function progress(item: Asset) {
-  if (typeof item.job === 'string' || !item.ffprobe) {
-    return {}
-  }
-
   const complete = ['processed', 'verified'].includes(item.state)
   return {
-    value: complete ? 100 : (item.job?.progress / item.ffprobe.format.duration * 100),
-    color: item.state === 'verified' ? 'success' : 'primary',
+    modelValue: complete ? 100 : (item.job?.progress / item.ffprobe.format.duration * 100),
+    color: item.state === 'verified' ? 'success' : 'info',
   }
 }
 

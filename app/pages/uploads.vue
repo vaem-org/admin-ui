@@ -189,7 +189,7 @@ async function download(item?: FileItem) {
     return
   }
 
-  location.href = await sign(`/files/${item._id}/download`)
+  location.href = await sign(`files/${item._id}/download`)
 }
 
 async function saveWebVtt({ webVtt, assetId, language }: {
