@@ -265,9 +265,34 @@ async function saveWebVtt({ webVtt, assetId, language }: {
   await api(`assets/${assetId}/subtitles/${language}/${language}.vtt`, {
     method: 'PUT',
     body: webVtt,
+    headers: {
+      'content-type': 'text/vtt',
+    },
   })
   editSubtitleDialog.value = false
 }
+
+let timer: ReturnType<typeof setTimeout> | undefined
+async function onItems(items: Asset[]) {
+  const hasProcessing = items.some(item => ['new', 'processing'].includes(item.state))
+  if (timer) {
+    clearTimeout(timer)
+    timer = undefined
+  }
+
+  if (hasProcessing) {
+    timer = setTimeout(() => {
+      timer = undefined
+      refresh()
+    }, 10000)
+  }
+}
+
+onUnmounted(() => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+})
 
 async function refresh() {
   await itemsRef.value?.refresh?.()
@@ -284,6 +309,7 @@ async function refresh() {
         :headers="headers"
         :filter="filter"
         default-sort="-createdAt"
+        @items="onItems"
       >
         <template #filters>
           <v-combobox

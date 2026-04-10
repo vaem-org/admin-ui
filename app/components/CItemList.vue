@@ -43,6 +43,7 @@ const slots = defineSlots<{
 
 const emit = defineEmits<{
   'click:row': [Event, { item: T }]
+  'items': [T[]]
 }>()
 
 defineExpose({
@@ -150,6 +151,10 @@ const selected = computed<string[]>({
   get() {
     return model.value.map(({ _id }) => _id)
   },
+})
+
+watch(data, (value) => {
+  emit('items', value.items)
 })
 
 watch([sortBy, page, itemsPerPage, () => props.filter], () => refresh())

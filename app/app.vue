@@ -50,7 +50,7 @@ const items: {
 </script>
 
 <template>
-  <v-app>
+  <v-app v-if="authStore.token || route.name === 'login'">
     <c-snackbar />
     <dialog-confirm />
     <v-navigation-drawer

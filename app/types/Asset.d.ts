@@ -23,7 +23,7 @@ export interface Asset extends Item {
   _id: string
   labels: string[]
   title: string
-  state: 'new' | 'verified' | 'processed'
+  state: 'new' | 'verified' | 'processed' | 'processing' | 'error'
   ffprobe: {
     streams: Stream[]
     format: Format

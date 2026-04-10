@@ -100,13 +100,15 @@ async function submit(validate: SubmitEventPromise) {
     if (file instanceof File) {
       try {
         await api(`assets/${item.value._id}/subtitles/${language}/${file.name}`, {
+          method: 'PUT',
           body: file,
           headers: {
             'content-type': file.type,
           },
         })
       }
-      catch (_e) {
+      catch (e) {
+        console.error(e)
         errorMessage.value = `Unable to convert subtitle for language '${language}'`
       }
     }
@@ -340,7 +342,7 @@ async function updateThumbnail() {
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn @click="addSubtitle">
+            <v-btn type="submit">
               Add
             </v-btn>
           </v-card-actions>

@@ -200,6 +200,9 @@ async function saveWebVtt({ webVtt, assetId, language }: {
   await api(`assets/${assetId}/subtitles/${language}/${language}.vtt`, {
     method: 'PUT',
     body: webVtt,
+    headers: {
+      'content-type': 'text/vtt',
+    },
   })
   editAndAssignToAssetDialog.value = false
 }
