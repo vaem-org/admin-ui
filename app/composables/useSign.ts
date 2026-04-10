@@ -21,11 +21,11 @@ export const useSign = () => {
   const config = useRuntimeConfig().public
 
   return async (url: string) => {
-    return new URL(await api<string>('sign', {
+    return new URL((await api<string>('sign', {
       method: 'POST',
       body: {
         url: '/' + url,
       },
-    }), config.apiUrl).toString()
+    })).replace(/^\//, ''), config.apiUrl).toString()
   }
 }
