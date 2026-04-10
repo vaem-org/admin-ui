@@ -42,7 +42,6 @@ const slots = defineSlots<{
 }>()
 
 const emit = defineEmits<{
-  'menu': [Event]
   'click:row': [Event, { item: T }]
 }>()
 
@@ -167,17 +166,20 @@ function clickRow(event: Event, { item }: { item: T }) {
   emit('click:row', event, { item })
 }
 
-function onContextMenu(event: Event, item: T) {
+function onContextMenu(item: T) {
   if (!model.value.some(({ _id }) => _id === item._id)) {
     model.value = [item]
   }
-  emit('menu', event)
 }
 
 async function refreshItems() {
   await refresh()
-  const currentIds = new Set<string>(data.value.items.map(({ _id }) => _id))
-  model.value = model.value.filter(({ _id }) => currentIds.has(_id))
+  const currentItems: Record<string, T> = Object.fromEntries(
+    data.value.items.map(item => [item._id, item]),
+  )
+  model.value = model.value
+    .filter(({ _id }) => currentItems[_id])
+    .map(({ _id }) => currentItems[_id] as T)
 }
 
 /**
@@ -279,7 +281,7 @@ async function exportItems(filenamePrefix: string,
       must-sort
       item-value="_id"
       :loading="status === 'pending'"
-      mobile-breakpoint="0"
+      :mobile-breakpoint="0"
       @click:row="clickRow"
     >
       <template
@@ -297,7 +299,7 @@ async function exportItems(filenamePrefix: string,
         <v-menu
           bottom
           right
-          @update:model-value="onContextMenu($event, item)"
+          @update:model-value="onContextMenu(item)"
         >
           <template #activator="{ props: activatorProps }">
             <v-btn

@@ -43,7 +43,7 @@ const embedUrl = computed(() => {
     ...loop.value ? { loop: '1' } : {},
   }).toString()
 
-  const url = new URL(`${config.embedUrl}/${props.item._id}`)
+  const url = new URL(`${config.embedUrl.replace(/\/$/, '')}/${props.item._id}`)
   url.search = query
   return url.toString()
 })
@@ -93,7 +93,7 @@ watch(copied, (value) => {
   >
     <v-card>
       <v-card-title>
-        <span>Share <em>{{ item.title }}</em></span>
+        <span>Embed <em>{{ item.title }}</em></span>
       </v-card-title>
       <v-card-text>
         <v-switch

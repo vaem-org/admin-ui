@@ -64,7 +64,7 @@ async function submit(validate: SubmitEventPromise) {
       expires: date.addWeeks(date.date(), weeksValid.value).valueOf(),
     },
   })
-  shareUrl.value = `${config.embedUrl}/${timestamp}/${signature}/${props.item._id}`
+  shareUrl.value = `${config.embedUrl.replace(/\/$/, '')}/${timestamp}/${signature}/${props.item._id}`
 }
 
 const { copy, copied } = useClipboard()

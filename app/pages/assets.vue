@@ -137,7 +137,8 @@ async function embed(item?: Asset) {
           public: true,
         },
       })
-      await itemsRef.value?.refresh?.()
+      await refreshNuxtData()
+      selectedItem.value['public'] = true
     }
     else {
       return
@@ -170,7 +171,7 @@ async function remove(items: Asset[]) {
     })
   }
 
-  await itemsRef.value?.refresh?.()
+  await refresh()
 }
 
 const exporting = ref(false)
@@ -228,7 +229,7 @@ watch(selected, (value) => {
 })
 
 function onSaved() {
-  return itemsRef.value?.refresh?.()
+  return refresh()
 }
 
 function progress(item: Asset) {
@@ -266,6 +267,10 @@ async function saveWebVtt({ webVtt, assetId, language }: {
     body: webVtt,
   })
   editSubtitleDialog.value = false
+}
+
+async function refresh() {
+  await itemsRef.value?.refresh?.()
 }
 </script>
 
