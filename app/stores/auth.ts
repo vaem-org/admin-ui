@@ -16,9 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { useRuntimeConfig } from '#app'
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string>()
   const api = useAPI()
+  const config = useRuntimeConfig()
 
   async function initialise() {
     token.value = sessionStorage.getItem('token') || undefined
@@ -47,7 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function getRedirectUri(): string {
-    return new URL('/login', window.location.origin).toString()
+    return new URL('/login', window.origin + config.app.baseURL).toString()
   }
 
   return {
