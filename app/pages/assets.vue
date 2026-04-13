@@ -296,8 +296,8 @@ async function onItems(items: Asset[]) {
   if (hasProcessing) {
     timer = setTimeout(() => {
       timer = undefined
-      refresh()
-    }, 10000)
+      refresh(false)
+    }, 60000)
   }
 }
 
@@ -307,8 +307,8 @@ onUnmounted(() => {
   }
 })
 
-async function refresh() {
-  await itemsRef.value?.refresh?.()
+async function refresh(showLoader = true) {
+  await itemsRef.value?.refresh?.(showLoader)
 }
 </script>
 
@@ -322,6 +322,7 @@ async function refresh() {
         :headers="headers"
         :filter="filter"
         default-sort="-createdAt"
+        :populate="['job']"
         @items="onItems"
       >
         <template #filters>
@@ -402,12 +403,14 @@ async function refresh() {
           {{ value ? 'yes' : 'no' }}
         </template>
         <template #[`item.labels`]="{ value, item }">
-          <v-chip
-            v-for="label of value"
-            :key="`${item._id}-${label}`"
-          >
-            {{ label }}
-          </v-chip>
+          <div class="d-flex flex-wrap ga-1 my-1">
+            <v-chip
+              v-for="label of value"
+              :key="`${item._id}-${label}`"
+            >
+              {{ label }}
+            </v-chip>
+          </div>
         </template>
         <template #[`item.subtitles`]="{ value }">
           {{ Object.keys(value ?? {}).length > 0 ? 'yes' : 'no' }}
@@ -436,12 +439,13 @@ async function refresh() {
     </v-main>
     <v-navigation-drawer
       location="end"
-      permanent
       absolute
-      persistent
       width="480"
     >
-      <nuxt-page @saved="onSaved" />
+      <nuxt-page
+        @close="selected = []"
+        @saved="onSaved"
+      />
     </v-navigation-drawer>
     <v-dialog
       v-model="infoDialog"

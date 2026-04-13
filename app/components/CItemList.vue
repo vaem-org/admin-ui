@@ -177,8 +177,11 @@ function onContextMenu(item: T) {
   }
 }
 
-async function refreshItems() {
+const showLoader = ref(true)
+async function refreshItems(_showLoader: boolean = true) {
+  showLoader.value = _showLoader
   await refresh()
+  showLoader.value = _showLoader
   const currentItems: Record<string, T> = Object.fromEntries(
     data.value.items.map(item => [item._id, item]),
   )
@@ -285,7 +288,7 @@ async function exportItems(filenamePrefix: string,
       show-select
       must-sort
       item-value="_id"
-      :loading="status === 'pending'"
+      :loading="status === 'pending' && showLoader"
       :mobile-breakpoint="0"
       @click:row="clickRow"
     >

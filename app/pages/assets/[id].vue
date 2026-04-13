@@ -205,7 +205,6 @@ async function updateThumbnail() {
     >
       <v-btn
         icon="mdi-close"
-        dark
         size="large"
         @click="emit('close')"
       />

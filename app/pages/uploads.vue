@@ -72,7 +72,7 @@ const onlyVideo = computed(() => selected.value.every(file => file.type === 'vid
 const allReady = computed(() => selected.value.every(isReady))
 
 function isReady(file: FileItem) {
-  return file.sourceSize === file.size
+  return !file.sourceSize || file.sourceSize === file.size
 }
 
 function onInput(event: Event) {
