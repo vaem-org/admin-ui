@@ -45,6 +45,7 @@ export default defineNuxtConfig({
         'bytes', // CJS
         'json-tree-view-vue3',
         'webvtt-parser', // CJS
+        'xlsx',
       ],
     },
   },

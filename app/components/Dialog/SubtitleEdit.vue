@@ -270,7 +270,12 @@ async function updateSubtitle() {
 
   const parser = new WebVTTParser()
   try {
-    const tree = parser.parse(await api(subtitleUrl.value))
+    const vtt = await api<Blob>(subtitleUrl.value, {
+      redirect: 'follow',
+      responseType: 'blob',
+    })
+
+    const tree = parser.parse(await vtt.text())
     cues.value = tree.cues.map(({ text, tree, ...cue }, index) => ({
       ...cue,
       id: index.toString(),

@@ -106,7 +106,7 @@ const modifiedHeaders = computed<DataTableHeader[]>(() => {
 
 const queryParams = computed(() => {
   return {
-    page: page.value - 1,
+    page: page.value,
     per_page: itemsPerPage.value,
     sort: sortBy.value,
     q: search.value,

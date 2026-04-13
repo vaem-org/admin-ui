@@ -342,6 +342,8 @@ async function uploadNext() {
     resume.value = true
   }
 
+  await refreshNuxtData()
+
   if (done && queue.length > 0) {
     await uploadNext()
   }
