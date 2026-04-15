@@ -25,16 +25,7 @@ import { languages } from '~/assets/languages.js'
 import type { StreamInfo } from '~/types/StreamInfo.js'
 import type { DataTableHeader, SubmitEventPromise } from 'vuetify/framework'
 import { VTextField } from 'vuetify/components'
-
-const toString = (seconds: number): string => {
-  return [
-    Math.floor(seconds / 3600),
-    Math.floor(seconds / 60) % 60,
-    Math.floor(seconds % 60),
-  ]
-    .map(v => v.toString().padStart(2, '0'))
-    .join(':')
-}
+import { secondsToString } from '~/assets/secondsToString.js'
 
 const model = defineModel<boolean>({
   required: true,
@@ -291,11 +282,11 @@ async function updateSubtitle() {
   }
 
   if (cues.value[0]) {
-    manual.value[0].destination = toString(cues.value[0].startTime)
+    manual.value[0].destination = secondsToString(cues.value[0].startTime)
   }
 
   const lastIndex = cues.value.length - 1
-  manual.value[1].destination = toString(cues.value[lastIndex]?.startTime ?? 0)
+  manual.value[1].destination = secondsToString(cues.value[lastIndex]?.startTime ?? 0)
   manual.value[1].index = lastIndex
   loading.value = false
   updateWebVtt()
@@ -474,10 +465,10 @@ function updateWebVtt() {
                   @click:row="navigate"
                 >
                   <template #[`item.startTime`]="{ item }">
-                    {{ toString(item.startTime) }}
+                    {{ secondsToString(item.startTime) }}
                   </template>
                   <template #[`item.endTime`]="{ item }">
-                    {{ toString(item.endTime) }}
+                    {{ secondsToString(item.endTime) }}
                   </template>
                   <template #[`item.actions`]="{ index }">
                     <div class="actions">

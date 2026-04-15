@@ -24,6 +24,7 @@ import type { ComponentExposed } from 'vue-component-type-helpers'
 import type { CItemList } from '#components'
 import { useRouteQuery } from '@vueuse/router'
 import { FetchError } from 'ofetch'
+import { secondsToString } from '~/assets/secondsToString.js'
 
 const api = useAPI()
 const confirm = useConfirm()
@@ -56,6 +57,10 @@ const headers: DataTableHeader[] = [
     value: 'title',
     width: '100%',
     sortable: true,
+  },
+  {
+    title: 'Duration',
+    value: 'duration',
   },
   {
     title: 'Public',
@@ -310,6 +315,10 @@ onUnmounted(() => {
 async function refresh(showLoader = true) {
   await itemsRef.value?.refresh?.(showLoader)
 }
+
+function duration(item: Asset): string {
+  return secondsToString(item.ffprobe?.format?.duration ?? 0)
+}
 </script>
 
 <template>
@@ -434,6 +443,9 @@ async function refresh(showLoader = true) {
             />
             {{ eta(item) }}
           </div>
+        </template>
+        <template #[`item.duration`]="{ item }">
+          {{ duration(item) }}
         </template>
       </c-item-list>
     </v-main>
