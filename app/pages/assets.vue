@@ -30,6 +30,7 @@ const api = useAPI()
 const confirm = useConfirm()
 const sign = useSign()
 const snackbarStore = useSnackbarStore()
+const route = useRoute()
 
 const itemsRef = useTemplateRef<ComponentExposed<typeof CItemList<Asset>>>('items')
 const selected = ref<Asset[]>([])
@@ -219,6 +220,7 @@ watch(selected, (value) => {
   if (value.length === 0) {
     navigateTo({
       name: 'assets',
+      query: route.query,
     }, {
       replace: true,
     })
@@ -229,6 +231,7 @@ watch(selected, (value) => {
       params: {
         id: value[0]!._id,
       },
+      query: route.query,
     }, {
       replace: true,
     })
