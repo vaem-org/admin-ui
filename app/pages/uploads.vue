@@ -103,7 +103,7 @@ async function encode(items: FileItem[]) {
   }
   else {
     const name = items.length === 1 ? 'Asset' : 'Assets'
-    if (done === items.length) {
+    if (done !== items.length) {
       snackbarStore.setSuccess(`${name} created successfully`)
     }
     else {
