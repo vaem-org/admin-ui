@@ -265,6 +265,7 @@ function eta(item: Asset): string {
 function showInfo(item: Asset) {
   infoDialog.value = true
   selectedItem.value = item
+  console.log(item)
 }
 
 const savingSubtitle = ref(false)
