@@ -16,12 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export function secondsToString(seconds: number): string {
-  return [
-    Math.floor(seconds / 3600),
-    Math.floor(seconds / 60) % 60,
-    Math.floor(seconds % 60),
-  ]
-    .map(v => v.toString().padStart(2, '0'))
-    .join(':') + (seconds % 1).toFixed(2).substring(1)
+export function stringToSeconds(value: string): number {
+  let multiplier = 1
+  let result = 0
+  for (const segment of (value.match(/\d{2}(\.\d+)?/g) ?? []).filter(Boolean).reverse()) {
+    result = result + parseFloat(segment) * multiplier
+    multiplier = multiplier * 60
+  }
+
+  return result
 }

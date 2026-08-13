@@ -164,7 +164,7 @@ function editAndAssignToAsset(item?: FileItem) {
   editAndAssignToAssetDialog.value = true
 }
 
-const ffprobe = ref<FFProbe | unknown>()
+const ffprobe = ref<FFProbe | Record<string, unknown>>()
 const ffprobeDialog = ref(false)
 async function showInfo(item?: FileItem) {
   if (!item) {
@@ -179,7 +179,9 @@ async function showInfo(item?: FileItem) {
     if (e instanceof FetchError) {
       ffprobe.value = e.response?._data
     }
-    ffprobe.value = 'An unknown error occurred'
+    ffprobe.value = {
+      error: 'An unknown error occurred',
+    }
   }
   ffprobeDialog.value = true
 }
@@ -506,7 +508,8 @@ function onDrop(event: DragEvent) {
             type="article"
           />
           <c-tree-view
-            :value="ffprobe"
+            v-else
+            :value="{ ...ffprobe }"
             :options="{ rootObjectKey: selectedItem?.name }"
             class="py-3"
           />

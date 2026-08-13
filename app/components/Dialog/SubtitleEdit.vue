@@ -26,6 +26,7 @@ import type { StreamInfo } from '~/types/StreamInfo.js'
 import type { DataTableHeader, SubmitEventPromise } from 'vuetify/framework'
 import { VTextField } from 'vuetify/components'
 import { secondsToString } from '~/assets/secondsToString.js'
+import { stringToSeconds } from '~/assets/stringToSeconds.js'
 
 const model = defineModel<boolean>({
   required: true,
@@ -85,11 +86,11 @@ type ManualItem = {
 const manual = ref<[ManualItem, ManualItem]>([
   {
     index: 0,
-    destination: '00:00:00',
+    destination: '00:00:00.00',
   },
   {
     index: 0,
-    destination: '00:00:00',
+    destination: '00:00:00.00',
   },
 ])
 
@@ -107,17 +108,6 @@ const modifiedCues = computed(() => {
     _delay = 0
   }
 
-  const toSeconds = (value: string): number => {
-    let multiplier = 1
-    let result = 0
-    for (const segment of (value.match(/\d{2}/g) ?? []).filter(Boolean).reverse()) {
-      result = result + parseInt(segment) * multiplier
-      multiplier = multiplier * 60
-    }
-
-    return result
-  }
-
   let _factor = 1
   if (speedAdjustment.value === 'framerate') {
     _factor = (sourceFramerate.value / destinationFramerate.value)
@@ -129,8 +119,8 @@ const modifiedCues = computed(() => {
     const s1 = cues.value[manual.value[0].index]?.startTime ?? 0
     const s2 = cues.value[manual.value[1].index]?.startTime ?? 1
 
-    const d1 = toSeconds(manual.value[0].destination) || s1
-    const d2 = toSeconds(manual.value[1].destination) || s2
+    const d1 = stringToSeconds(manual.value[0].destination) || s1
+    const d2 = stringToSeconds(manual.value[1].destination) || s2
 
     _factor = (d1 - d2) / (s1 - s2)
     _delay = d1 - s1 * (d1 - d2) / (s1 - s2)
@@ -330,6 +320,7 @@ function updateWebVtt() {
     v-model="model"
     width="1200"
     :fullscreen="xs"
+    persistent
   >
     <v-card
       :loading="loading"

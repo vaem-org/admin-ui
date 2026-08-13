@@ -29,8 +29,9 @@ const model = defineModel<string>({
 <template>
   <v-mask-input
     v-model="model"
-    mask="##:##:##"
-    placeholder="##:##:##"
+    mask="##:##:##.##"
+    placeholder="##:##:##.##"
+    return-masked-value
     :label="label"
     v-bind="$attrs"
   />
