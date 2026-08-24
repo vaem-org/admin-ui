@@ -383,6 +383,12 @@ function onDrop(event: DragEvent) {
   }
   upload([...event.dataTransfer.files])
 }
+
+const previewDialog = ref(false)
+function preview(item: FileItem) {
+  selectedItem.value = item
+  previewDialog.value = true
+}
 </script>
 
 <template>
@@ -464,6 +470,11 @@ function onDrop(event: DragEvent) {
             @click="download(item)"
           />
           <v-list-item
+            v-if="isReady(item)"
+            title="Preview"
+            @click="preview(item)"
+          />
+          <v-list-item
             title="Remove"
             @click="remove([item])"
           />
@@ -516,6 +527,10 @@ function onDrop(event: DragEvent) {
         </v-card-text>
       </v-card>
     </v-dialog>
+    <dialog-preview
+      v-model="previewDialog"
+      :file="selectedItem"
+    />
   </v-main>
 </template>
 
