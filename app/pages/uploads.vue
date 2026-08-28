@@ -316,7 +316,7 @@ async function uploadNext() {
         request.open('PUT', new URL(`files/${_id}/upload/${start}`, config.apiUrl))
         request.setRequestHeader('content-type', file.type)
         request.setRequestHeader('authorization', `Bearer ${authStore.token}`)
-        request.send(file)
+        request.send(file.slice(start))
       })
 
       done = true
