@@ -25,12 +25,12 @@
     "hls.js": "^1.7.1",
     "json-tree-view-vue3": "^2.0.0",
     "nuxt": "^4.5.2",
-    "remeda": "^2.43.0",
+    "remeda": "^2.45.0",
     "sass-embedded": "^1.103.1",
-    "vue": "^3.5.41",
+    "vue": "^3.5.42",
     "vue-component-type-helpers": "^3.3.11",
     "vue-router": "^5.2.0",
-    "vuetify": "^4.1.11",
+    "vuetify": "^4.1.12",
     "vuetify-nuxt-module": "1.0.0-rc.5",
     "webvtt-parser": "^2.2.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@types/bytes": "^3.1.6",
     "@types/webvtt-parser": "^2.2.0",
-    "eslint": "^10.9.0",
+    "eslint": "^10.9.1",
     "tsx": "^4.23.12",
     "typescript": "^6.0.3"
   },

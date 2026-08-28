@@ -297,27 +297,26 @@ async function uploadNext() {
       }
       prevStart = start
 
-      request.open('PUT', new URL(`files/${_id}/upload/${start}`, config.apiUrl))
-      request.setRequestHeader('content-type', file.type)
-      request.setRequestHeader('authorization', `Bearer ${authStore.token}`)
-      request.send(file)
-
       uploadProgress.value[_id] = {
         loaded: start,
         total: file.size,
       }
 
-      request.addEventListener('progress', (event: ProgressEvent) => {
-        uploadProgress.value[_id]!.loaded = start + event.loaded
-      })
-
       await new Promise<void>((resolve, reject) => {
-        request.addEventListener('loadend', () => {
+        request.upload.addEventListener('loadend', () => {
           uploadProgress.value[_id]!.loaded = uploadProgress.value[_id]?.total ?? 0
           resolve()
         })
+        request.upload.addEventListener('progress', (event: ProgressEvent) => {
+          uploadProgress.value[_id]!.loaded = start + event.loaded
+        })
         request.addEventListener('error', reject)
         request.addEventListener('abort', () => reject(new AbortError()))
+
+        request.open('PUT', new URL(`files/${_id}/upload/${start}`, config.apiUrl))
+        request.setRequestHeader('content-type', file.type)
+        request.setRequestHeader('authorization', `Bearer ${authStore.token}`)
+        request.send(file)
       })
 
       done = true
@@ -327,6 +326,7 @@ async function uploadNext() {
         // retry
         tries--
         await new Promise(resolve => setTimeout(resolve, 1000))
+        console.warn(e)
         console.log(`Retrying upload (${tries} tries left)`)
       }
       else {
