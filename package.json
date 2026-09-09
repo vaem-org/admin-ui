@@ -22,15 +22,15 @@
     "@vueuse/router": "^14.4.0",
     "bytes": "^3.1.2",
     "dayjs": "^1.11.23",
-    "hls.js": "^1.7.1",
+    "hls.js": "^1.7.2",
     "json-tree-view-vue3": "^2.0.0",
     "nuxt": "^4.5.2",
-    "remeda": "^2.45.0",
-    "sass-embedded": "^1.103.1",
+    "remeda": "^2.47.0",
+    "sass-embedded": "^1.104.0",
     "vue": "^3.5.42",
     "vue-component-type-helpers": "^3.3.11",
-    "vue-router": "^5.2.0",
-    "vuetify": "^4.1.12",
+    "vue-router": "^5.3.1",
+    "vuetify": "^4.2.0",
     "vuetify-nuxt-module": "1.0.0-rc.5",
     "webvtt-parser": "^2.2.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
@@ -38,8 +38,8 @@
   "devDependencies": {
     "@types/bytes": "^3.1.6",
     "@types/webvtt-parser": "^2.2.0",
-    "eslint": "^10.9.1",
-    "tsx": "^4.23.12",
+    "eslint": "^10.10.0",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.3"
   },
   "packageManager": "pnpm@11.13.0+sha512.88d94724d8f2e6c186744a5584c6e59ecac869ec7ba15e9cb4cd628e8dc7066820b2481d8ee3b51ea8da323a7378068aa58c556a3720d32b7c20a051d088363a"

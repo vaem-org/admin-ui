@@ -57,6 +57,7 @@ export default defineNuxtConfig({
   },
   vuetify: {
     moduleOptions: {
+      enableRules: false,
       prefixComposables: ['useLayout'],
     },
     vuetifyOptions: './vuetify.config.ts',

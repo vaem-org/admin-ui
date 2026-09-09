@@ -134,8 +134,8 @@ const modifiedCues = computed(() => {
     }) => {
       return {
         ...cue,
-        startTime: startTime * _factor + _delay,
-        endTime: endTime * _factor + _delay,
+        startTime: Math.max(0, startTime * _factor + _delay),
+        endTime: Math.max(0, endTime * _factor + _delay),
       }
     })
 })
