@@ -20,8 +20,12 @@ export function secondsToString(seconds: number): string {
   return [
     Math.floor(seconds / 3600),
     Math.floor(seconds / 60) % 60,
-    Math.floor(seconds % 60),
+    seconds % 60,
   ]
-    .map(v => v.toString().padStart(2, '0'))
-    .join(':') + (seconds % 1).toFixed(2).substring(1)
+    .map((v, index) => {
+      return v
+        .toFixed(index === 2 ? 2 : 0)
+        .padStart(index === 2 ? 5 : 2, '0')
+    })
+    .join(':')
 }
