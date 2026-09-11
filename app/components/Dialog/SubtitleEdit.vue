@@ -52,6 +52,7 @@ const snackbarStore = useSnackbarStore()
 const { xs } = useDisplay()
 
 const videoRef = useTemplateRef<InstanceType<typeof VaemPlayer>>('video')
+const tableRef = useTemplateRef('table')
 const language = ref<string | undefined>(languages[0])
 const assetId = ref<string | null>(props.asset?._id ?? null)
 const stream = ref<StreamInfo>()
@@ -96,9 +97,9 @@ const manual = ref<[ManualItem, ManualItem]>([
 
 const webVtt = ref('')
 const cueHeaders: DataTableHeader[] = [
-  { title: 'Start', value: 'startTime' },
-  { title: 'End', value: 'endTime' },
-  { title: 'Text', value: 'text' },
+  { title: 'Start', value: 'cue.startTime' },
+  { title: 'End', value: 'cue.endTime' },
+  { title: 'Text', value: 'cue.text' },
   { value: 'actions' },
 ]
 
@@ -170,11 +171,6 @@ const availableLanguages = computed(() => {
     : languages
 })
 
-const page = ref(1)
-const itemsPerPage = ref(10)
-
-const numPages = computed(() => Math.ceil(cues.value.length / itemsPerPage.value))
-
 watch(model, (value) => {
   if (!value) {
     return
@@ -186,6 +182,8 @@ watch(model, (value) => {
   sourceFramerate.value = 25
   destinationFramerate.value = 25
   updateSubtitle()
+}, {
+  immediate: true,
 })
 
 const selectedAssetId = computed(() => props.asset?._id ?? assetId.value)
@@ -208,6 +206,8 @@ watch(availableLanguages, (languages) => {
   if (!language.value || !languages.includes(language.value)) {
     language.value = languages[0]
   }
+}, {
+  immediate: true,
 })
 
 watch(delay, () => {
@@ -220,8 +220,8 @@ watchDebounced(modifiedCues, () => {
   debounce: 500,
 })
 
-function navigate(_event: Event, data: { item: VTTCue, index: number }) {
-  const seekTime = Math.max(0, data.item.startTime - 2)
+function navigate(_event: Event, data: { item: { cue: Cue }, index: number }) {
+  const seekTime = Math.max(0, data.item.cue.startTime - 2)
   videoRef.value?.seek?.(seekTime)
 }
 
@@ -313,6 +313,46 @@ function updateWebVtt() {
     .filter((_, index) => !deleteLines.value.includes(index)),
   )
 }
+
+const currentIndex = ref<number>()
+function onTimeUpdate(time: number) {
+  if (!videoRef.value || !tableRef.value) {
+    return
+  }
+
+  const index = modifiedCues.value.findIndex((cue) => {
+    return cue.startTime <= time && cue.endTime > time
+  })
+
+  if (currentIndex.value !== index) {
+    currentIndex.value = index
+
+    if (index !== -1) {
+      tableRef.value.scrollToIndex(index, 'center')
+    }
+  }
+}
+
+const rows = computed<{
+  cue: Cue
+  active: boolean
+}[]>(() => modifiedCues.value.map((cue, index) => {
+  return {
+    cue,
+    active: index === currentIndex.value,
+  }
+}))
+
+function getRowProps({ item }: {
+  item: {
+    cue: Cue
+    active: boolean
+  }
+}) {
+  return {
+    class: item.active ? 'active-row' : undefined,
+  }
+}
 </script>
 
 <template>
@@ -370,6 +410,7 @@ function updateWebVtt() {
                     :src="stream.stream"
                     :text-tracks="textTracks"
                     :aspect-ratio="16/9"
+                    @timeupdate="onTimeUpdate"
                   />
                 </v-responsive>
                 <v-select
@@ -446,20 +487,21 @@ function updateWebVtt() {
               <div
                 class="flex-grow-1 overflow-y-auto height"
               >
-                <v-data-table
-                  v-model:items-per-page="itemsPerPage"
-                  v-model:page="page"
+                <v-data-table-virtual
+                  ref="table"
                   :headers="cueHeaders"
-                  :items="modifiedCues"
+                  :items="rows"
                   class="cues"
-                  hide-default-footer
+                  height="600"
+                  fixed-header
+                  :row-props="getRowProps"
                   @click:row="navigate"
                 >
-                  <template #[`item.startTime`]="{ item }">
-                    {{ secondsToString(item.startTime) }}
+                  <template #[`item.cue.startTime`]="{ item }">
+                    {{ secondsToString(item.cue.startTime) }}
                   </template>
-                  <template #[`item.endTime`]="{ item }">
-                    {{ secondsToString(item.endTime) }}
+                  <template #[`item.cue.endTime`]="{ item }">
+                    {{ secondsToString(item.cue.endTime) }}
                   </template>
                   <template #[`item.actions`]="{ index }">
                     <div class="actions">
@@ -477,56 +519,7 @@ function updateWebVtt() {
                       />
                     </div>
                   </template>
-                </v-data-table>
-                <v-toolbar
-                  elevation="0"
-                  color="transparent"
-                >
-                  <v-spacer />
-                  <span class="mr-10">
-                    {{ (page - 1) * itemsPerPage + 1 }}-{{ page * itemsPerPage }} of {{ cues.length }}
-                  </span>
-                  <v-btn
-                    icon
-                    small
-                    :disabled="page === 1"
-                    @click="page = 1"
-                  >
-                    <v-icon>
-                      mdi-page-first
-                    </v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    small
-                    :disabled="page === 1"
-                    @click="page = page - 1"
-                  >
-                    <v-icon>
-                      mdi-chevron-left
-                    </v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    small
-                    :disabled="page === numPages"
-                    @click="page = page + 1"
-                  >
-                    <v-icon>
-                      mdi-chevron-right
-                    </v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    small
-                    :disabled="page === numPages"
-                    @click="page = numPages"
-                  >
-                    <v-icon>
-                      mdi-page-last
-                    </v-icon>
-                  </v-btn>
-                </v-toolbar>
+                </v-data-table-virtual>
               </div>
             </v-col>
           </v-row>
@@ -570,5 +563,8 @@ tr:hover .actions {
 tr.deleted td,
 tr.deleted th {
   text-decoration: line-through;
+}
+:deep(.active-row) {
+  background-color: #e8f5e920 !important;
 }
 </style>
